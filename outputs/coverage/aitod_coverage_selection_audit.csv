@@ -1,0 +1,3 @@
+group,images,vehicle_boxes,boxes_per_image,median_max_side_px,median_normalized_side
+covered,1869,16900,9.042268592830391,12.0,0.015
+not_covered,935,43004,45.99358288770053,16.0,0.02

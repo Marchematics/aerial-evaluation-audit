@@ -1,0 +1,7 @@
+source,mode,threshold,policies_declared,independent_policy_outcomes,duplicate_policy_groups
+aitod,absolute,24.0,3,2,"[[""exclude_with_ignore_protection"", ""exclude_without_ignore_protection""], [""include_all""]]"
+uavdt,absolute,24.0,3,2,"[[""exclude_with_ignore_protection"", ""exclude_without_ignore_protection""], [""include_all""]]"
+visdrone,absolute,24.0,3,3,"[[""exclude_with_ignore_protection""], [""exclude_without_ignore_protection""], [""include_all""]]"
+aitod,normalized,0.015,3,2,"[[""exclude_with_ignore_protection"", ""exclude_without_ignore_protection""], [""include_all""]]"
+uavdt,normalized,0.015,3,2,"[[""exclude_with_ignore_protection"", ""exclude_without_ignore_protection""], [""include_all""]]"
+visdrone,normalized,0.015,3,3,"[[""exclude_with_ignore_protection""], [""exclude_without_ignore_protection""], [""include_all""]]"

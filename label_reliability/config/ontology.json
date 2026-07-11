@@ -1,0 +1,57 @@
+{
+  "version": "v0.1",
+  "date": "2026-05-30",
+  "shared_coarse_classes": [
+    "person",
+    "vehicle",
+    "two_wheel",
+    "ambiguous",
+    "ignore"
+  ],
+  "shared_fine_classes": [
+    "pedestrian",
+    "people",
+    "bicycle",
+    "car",
+    "van",
+    "truck",
+    "tricycle",
+    "awning_tricycle",
+    "bus",
+    "motor"
+  ],
+  "sources": {
+    "visdrone": {
+      "format": "visdrone_det_txt",
+      "raw_classes": {
+        "0": {"name": "ignored_region", "coarse": "ignore", "fine": "ignored_region"},
+        "1": {"name": "pedestrian", "coarse": "person", "fine": "pedestrian"},
+        "2": {"name": "people", "coarse": "person", "fine": "people"},
+        "3": {"name": "bicycle", "coarse": "two_wheel", "fine": "bicycle"},
+        "4": {"name": "car", "coarse": "vehicle", "fine": "car"},
+        "5": {"name": "van", "coarse": "vehicle", "fine": "van"},
+        "6": {"name": "truck", "coarse": "vehicle", "fine": "truck"},
+        "7": {"name": "tricycle", "coarse": "two_wheel", "fine": "tricycle"},
+        "8": {"name": "awning-tricycle", "coarse": "two_wheel", "fine": "awning_tricycle"},
+        "9": {"name": "bus", "coarse": "vehicle", "fine": "bus"},
+        "10": {"name": "motor", "coarse": "two_wheel", "fine": "motor"},
+        "11": {"name": "others", "coarse": "ambiguous", "fine": "others"}
+      }
+    },
+    "uavdt": {
+      "format": "coco_json",
+      "raw_classes": {
+        "1": {"name": "car", "coarse": "vehicle", "fine": "car"},
+        "2": {"name": "truck", "coarse": "vehicle", "fine": "truck"},
+        "3": {"name": "bus", "coarse": "vehicle", "fine": "bus"}
+      }
+    }
+  },
+  "audit_policy": {
+    "tiny_max_side_px": 16,
+    "small_max_side_px": 24,
+    "main_comparison_level": "coarse",
+    "fine_level_rule": "Report fine classes only where both source definitions and support are defensible.",
+    "vlm_rule": "VLMs may propose boxes for review but must not create accepted labels without human adjudication."
+  }
+}

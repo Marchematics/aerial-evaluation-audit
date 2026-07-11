@@ -1,0 +1,4 @@
+source,candidates,source_evaluation_images,common_prediction_covered_images,common_coverage_fraction
+aitod,aitod_baseline640,2804,1869,0.6665477888730386
+uavdt,uavdt_baseline640;uavdt_tiling;uavdt_yolo11m704;uavdt_yolo11n640,305,305,1.0
+visdrone,visdrone_baseline640;visdrone_sahi640,548,548,1.0

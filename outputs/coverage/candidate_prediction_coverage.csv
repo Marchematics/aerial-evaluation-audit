@@ -1,0 +1,8 @@
+source,candidate,source_evaluation_images,prediction_covered_images,coverage_fraction
+aitod,aitod_baseline640,2804,1869,0.6665477888730386
+uavdt,uavdt_baseline640,305,305,1.0
+uavdt,uavdt_yolo11n640,305,305,1.0
+uavdt,uavdt_yolo11m704,305,305,1.0
+uavdt,uavdt_tiling,305,305,1.0
+visdrone,visdrone_baseline640,548,548,1.0
+visdrone,visdrone_sahi640,548,548,1.0

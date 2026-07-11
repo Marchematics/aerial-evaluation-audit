@@ -1,0 +1,11 @@
+claim,status,evidence
+annotation-support shift,observed,outputs/scale/box_scale_records.parquet; outputs/statistics/headline_retained_support.csv
+raw-prediction coverage and AI-TOD selection contrast,observed,outputs/coverage/source_common_intersection.csv; outputs/coverage/aitod_coverage_selection_audit.csv
+coverage-corrected full greedy rule grid,observed,outputs/coverage_corrected_grid/metrics_long.parquet
+AP50 policy-band and deterministic multi-candidate winner checks,observed,outputs/ap_headline/ap_headline_surface.csv; outputs/ap_headline/ap_policy_winners.csv
+threshold-first Hungarian matcher sensitivity,observed,outputs/matching_headline/matching_delta_summary.csv; outputs/matching_headline/greedy_hungarian_agreement.csv
+exclude-and-ignore-removed control,observed,outputs/controls/exclude_and_ignore_removed_headline.csv
+paired F1 bootstrap qualification,observed,outputs/statistics/bootstrap_headline_f1_common_coverage.csv
+detector-wide ranking,forbidden,configuration-pool scope only
+AI-TOD rank stability,forbidden,single candidate and incomplete raw-prediction coverage
+annotation-error rate or causal source effect,forbidden,no adjudicated error-rate or causal analysis
