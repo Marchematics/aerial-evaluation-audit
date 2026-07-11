@@ -1,4 +1,4 @@
-# Review bundle
+# Supplementary repository
 
 This data-free bundle contains the compiled five-page manuscript and six-page supplementary material, frozen rule contract, ontology, raw-cache manifest and SHA-256 values, coverage audits, corrected derived records, pairwise-policy diagnostics, and evaluator scripts. Raw images and prediction Parquet files are not redistributed: they are licensed external artifacts and their paths/hashes are recorded in `outputs/candidates/prediction_manifest_v2.csv`.
 
