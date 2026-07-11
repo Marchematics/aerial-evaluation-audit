@@ -2,9 +2,9 @@
   "overall_verdict": "PASS",
   "auditor": "deterministic local manuscript-to-artifact preflight",
   "independent_cross_model_audit": "not available in this runtime",
-  "claims_verified": 43,
+  "claims_verified": 55,
   "counts": {
-    "rounding_ok": 43
+    "rounding_ok": 55
   },
   "checks": [
     {
@@ -230,6 +230,102 @@
       "evidence_value": 0.604,
       "status": "rounding_ok",
       "evidence_file": "outputs/statistics/bootstrap_headline_ap50_common_coverage.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "visdrone AP50 reference margin",
+      "paper_value": 0.3544,
+      "evidence_value": 0.3544486086112563,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "visdrone AP50 differential radius",
+      "paper_value": 0.0206,
+      "evidence_value": 0.0205771149581633,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "visdrone AP50 minimum margin",
+      "paper_value": 0.3544,
+      "evidence_value": 0.3544486086112563,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "uavdt AP50 reference margin",
+      "paper_value": 0.034,
+      "evidence_value": 0.0340489383081631,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "uavdt AP50 differential radius",
+      "paper_value": 0.0326,
+      "evidence_value": 0.0326406477614946,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "uavdt AP50 minimum margin",
+      "paper_value": 0.0014,
+      "evidence_value": 0.0014082905466684,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "visdrone F1 reference margin",
+      "paper_value": 0.3354,
+      "evidence_value": 0.3353575305847922,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "visdrone F1 differential radius",
+      "paper_value": 0.0026,
+      "evidence_value": 0.0025785572437844,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "visdrone F1 minimum margin",
+      "paper_value": 0.3354,
+      "evidence_value": 0.3353575305847922,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "uavdt F1 reference margin",
+      "paper_value": 0.1911,
+      "evidence_value": 0.1910539773924093,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "uavdt F1 differential radius",
+      "paper_value": 7e-05,
+      "evidence_value": 6.722582226798002e-05,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
+    },
+    {
+      "location": "Table IV: differential policy",
+      "claim": "uavdt F1 minimum margin",
+      "paper_value": 0.191,
+      "evidence_value": 0.1909867515701414,
+      "status": "rounding_ok",
+      "evidence_file": "outputs/statistics/pairwise_policy_robustness.csv"
     },
     {
       "location": "Results: maxDets sensitivity",
