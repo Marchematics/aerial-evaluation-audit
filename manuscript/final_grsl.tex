@@ -1,0 +1,120 @@
+\documentclass[journal]{IEEEtran}
+\usepackage{amsmath,booktabs,graphicx,microtype,balance}
+\usepackage[hidelinks]{hyperref}
+\makeatletter
+\setlength{\@fptop}{0pt}\setlength{\@fpsep}{7pt}\setlength{\@fpbot}{0pt plus 1fil}
+\setlength{\@dblfptop}{0pt}\setlength{\@dblfpsep}{7pt}\setlength{\@dblfpbot}{0pt plus 1fil}
+\makeatother
+\emergencystretch=2em\sloppy
+\title{Auditing Annotation Support and Evaluation Sensitivity in Aerial Vehicle Detection}
+\author{Xinling Wen, Jiahao Zhang, Wenqi Liu, Yangxu Ren, and Yu Chen%
+\thanks{This work was supported by Henan provincial research, innovation, education-reform, talent, and collaborative-innovation programs (Grant Nos. 241111213000, 26IRTSTHN036, YJS2024JD48, 2025SJGLX086Y, and 254000510003).}%
+\thanks{All authors are with the School of Electronics and Information, Zhengzhou University of Aeronautics, Zhengzhou 450046, China. Xinling Wen and Yu Chen are also with the Henan Key Laboratory of General Aviation Technology and the Collaborative Innovation Center of Aeronautics and Astronautics Electronic Information Technology, Henan Province, Zhengzhou 450046, China.}%
+\thanks{Corresponding authors: Jiahao Zhang (marchematics@gmail.com) and Yu Chen (chatu@zua.edu.cn).}}
+\begin{document}\maketitle
+\begin{abstract}
+Aerial detection results are often compared as if their evaluation support were interchangeable. We introduce a provenance-aware audit that reports annotation-support shift, evaluation-policy sensitivity, and candidate-pool rank robustness. The audit covers VisDrone validation, a local UAVDT conversion, AI-TOD validation, and DOTA-v2 validation for structural analysis, totaling 141,347 vehicle boxes. Seven frozen prediction artifacts are replayed over 9,408 prespecified greedy-rule records. Raw coverage is established before class filtering, so an image with no vehicle prediction remains an evaluated empty prediction. A fixed 24-pixel rule retains 73.3\%, 95.1\%, and 9.7\% of vehicle boxes in VisDrone, local UAVDT, and AI-TOD, respectively. AP$_{50}$ bands reach .097 and $F_1$ bands reach .330. Across the two multi-candidate pools, AP$_{50}$ winners remain unchanged in 12 headline source--rule--policy checks (10 distinct policy outcomes), and greedy and threshold-first Hungarian matching agree on winners in 24 checks (20 distinct outcomes). In paired 1,000-replicate comparisons, every VisDrone AP$_{50}$/$F_1$ 95\% interval favors SAHI, whereas every local-UAVDT sequence-proxy interval contains zero. The audit therefore shows how support and evaluator choices can move reported metrics while rank conclusions require common coverage and uncertainty context.
+\end{abstract}
+\begin{IEEEkeywords}Aerial detection, annotation support, evaluation sensitivity, benchmark auditing, vehicle detection.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Aerial detection scores depend on both prediction artifacts and the annotation support against which they are computed. Platform, resolution, ontology, ignored regions, small-object handling, and matching conventions can all change the target of a reported metric. Existing aerial benchmarks are intentionally heterogeneous \cite{zhu2018vision,zhu2021detection,du2018unmanned,xia2018dota,lam2018xview,xu2022detecting}, and label-space differences and dataset bias further complicate comparison \cite{zhao2020object,torralba2011unbiased}.
+
+Recent GRSL work addresses efficient high-resolution modeling and validation bias \cite{zhu2025unetmamba,liu2025dem}. Error taxonomies and label-quality studies provide complementary evidence \cite{bolya2020tide,northcutt2021pervasive,murrugarra2025noise,schubert2024identifying}. A practical gap remains: cross-artifact detection studies rarely report the support being scored, the sensitivity of a metric to evaluation policy, and the stability of a within-pool ranking under the same declared rules. Small-object handling makes this gap especially important when pixel support is limited \cite{xu2022detecting}.
+
+We address this gap with a three-part audit: (i) \emph{annotation-support shift}, the change in retained valid boxes under a declared support rule; (ii) an \emph{evaluation-policy band}, $\max_r m(r)-\min_r m(r)$ over prespecified rules $r$; and (iii) \emph{candidate-pool rank robustness}, agreement of the winner within a declared multi-candidate pool. The protocol makes the scored target explicit before cross-artifact metrics are interpreted.
+
+\section{Audit Design}
+\subsection{Artifacts and common coverage}
+We audit VisDrone2019-DET validation, a local COCO-style UAVDT conversion, AI-TOD validation, and patched DOTA-v2 validation \cite{zhu2018vision,du2018unmanned,xu2022detecting,ding2021object}. The available AI-TOD crop reconstruction is xView-derived \cite{lam2018xview}. The vehicle mapping is VisDrone \{car, van, truck, bus\}; UAVDT \{car, truck, bus\}; AI-TOD \{vehicle\}; and DOTA-v2 \{small-vehicle, large-vehicle\}. We retain VisDrone source ignores and retain all truncation and occlusion attributes. UAVDT uses the local COCO $xywh$ conversion. DOTA quadrilaterals are converted to axis-aligned boxes for structural scale analysis; it contributes no prediction-based evaluation. The provenance manifest records the patched DOTA artifact and all conversion details.
+
+\begin{table}[t]
+\centering\caption{Declared artifact support and raw-prediction coverage. A covered image with no retained vehicle-class prediction is evaluated as empty.}\label{tab:sources}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrr}\toprule
+Source & Eval. & Vehicle+ & Covered & Boxes & Median px & Median norm.\\
+ & images & images & images & & side & side\\\midrule
+VisDrone & 548 & 519 & 548 & 17,040 & 41.0 & .0412\\
+Local UAVDT & 305 & 305 & 305 & 11,054 & 33.0 & .0278\\
+AI-TOD & 2,804 & 1,443 & 1,869 & 59,904 & 14.0 & .0175\\
+DOTA-v2 & 5,108 & 2,581 & -- & 53,349 & 18.0 & .0352\\\bottomrule
+\end{tabular}}
+\end{table}
+
+AI-TOD has 1,869 covered images with 16,900 vehicle boxes (9.0/image; median side 12 px), compared with 43,004 boxes in 935 noncovered images (46.0/image; median side 16 px). It therefore contributes a coverage-conditioned, single-candidate sensitivity analysis. Multi-candidate rank robustness is assessed on VisDrone and local UAVDT, which have complete source-wise common coverage (548/548 and 305/305).
+
+Coverage is the presence of an image name in the \emph{raw} prediction artifact before vehicle-class filtering. This distinguishes an executed image with zero retained vehicle predictions from a missing cache record. After filtering, the former remains in the evaluation and contributes valid GT as false negatives. All within-source candidate comparisons use the source-wise common coverage in Table~\ref{tab:sources}; the AI-TOD covered/noncovered contrast is reported as selection evidence.
+
+\subsection{Evaluation contract}
+For a box $(w,h)$ in image $(W,H)$, absolute support is $s_a=\max(w,h)$ and normalized support is $s_n=\max(w/W,h/H)$. The prespecified grid contains $s_a\in\{16,20,24,28,32,40,48,64\}$ px, $s_n\in\{.005,.0075,.010,.015,.020,.030\}$, confidence $\in\{.10,.15,.20,.25,.30,.35,.40,.50\}$, and IoU $\in\{.25,.30,.40,.50\}$. The headline thresholds, 24 px and .015, are interior grid values that expose the absolute/normalized support contrast.
+
+The full surface contains 9,408 greedy records. The AP surface evaluates seven candidates under two scale rules and three policies (42 records), while the matching control uses the same scale rules and policies at confidence .25 and IoU .25/.50 (84 records). For pairwise diagnostics, $\mathcal R_h^{AP}=\{(a,24\,\mathrm{px}),(n,.015)\}\times\Pi$ and $\mathcal R_h^{F_1}=\{(a,24\,\mathrm{px}),(n,.015)\}\times\Pi$ each contain six nominal scale--policy settings; the latter fixes $c=.25$ and $\iota=.25$. The matching set is $\mathcal R_h^{match}=\{(a,24\,\mathrm{px}),(n,.015)\}\times\Pi\times\{.25,.50\}$ at $c=.25$. Exact ties are treated as rank instability.
+
+The primary policy set is $\Pi=\{I,O,N\}$: $I$=include-all, $O$=exclude/source-ignore-off, and $N$=exclude/source-ignore-on. $I$ retains all mapped valid boxes. $O$ removes below-threshold boxes while retaining predictions as eligible false positives. $N$ uses the same removal and suppresses predictions overlapping source-provided ignore regions at .5 IoU. Under $O$ and $N$, removed valid boxes retain ordinary non-ignore status. An ancillary \emph{exclude-and-ignore-removed} rule suppresses predictions on removed boxes as well as source ignores, isolating the effect of removed-object treatment.
+
+Greedy matching assigns each score-ordered prediction to the best unmatched eligible GT. Threshold-first lexicographic Hungarian matching first maximizes the number of valid IoU-threshold matches and then their total IoU, with dummy nodes for unmatched objects. Fixed-operating-point performance is global micro-$F_1=2TP/(2TP+FP+FN)$ over evaluated images. AP uses score-ordered COCO bbox evaluation \cite{lin2014microsoft} with common category 1, standard area ranges, and \texttt{maxDets}=100. The one-to-one overlap contract follows standard detection evaluation \cite{everingham2010pascal}; cache scores and hashes are retained in the candidate manifest.
+
+For a full rule $r=(d,\tau,\pi,c,\iota)$, the support shift is $1-|G_s(d,\tau)|/|G_s|$. At fixed $(d,\tau,c,\iota)$, the \emph{policy band} is
+\begin{equation*}
+B_m^{\pi}=\max_{\pi\in\Pi_s}m(d,\tau,\pi,c,\iota)-\min_{\pi\in\Pi_s}m(d,\tau,\pi,c,\iota).
+\end{equation*}
+Rank robustness is evaluated on multi-candidate pools that share $C_s$ and is the fraction of fixed settings with the same maximizing candidate.
+
+\subsection{Rank diagnostic and uncertainty}
+For a finite headline set $\mathcal R_h$, the candidate-level \emph{rule band} is $B_k(\mathcal R_h)=\max_{r\in\mathcal R_h}m_k(r)-\min_{r\in\mathcal R_h}m_k(r)$. For reference rule $r_0$ and winner $k^\star$, let $\Delta_j(r)=m_{k^\star}(r)-m_j(r)$ and
+\begin{equation*}
+\Gamma_j(\mathcal R_h)=\max_{r\in\mathcal R_h}|\Delta_j(r)-\Delta_j(r_0)|.
+\end{equation*}
+This differential radius measures policy-induced movement of the pairwise gap. Normalized support is invariant under isotropic resizing. If $\Delta_j(r_0)>\Gamma_j(\mathcal R_h)$ for every competitor $j$, then $k^\star$ remains the winner on $\mathcal R_h$; moreover, $\Gamma_j(\mathcal R_h)\leq B_{k^\star}(\mathcal R_h)+B_j(\mathcal R_h)$. Proofs and complementary bounds are provided in the supplementary material.
+
+We use a paired 1,000-replicate bootstrap (seed 20260712) of the leading and runner-up candidates. Resampling units are images for VisDrone and filename-derived sequence proxies for local UAVDT; the latter yields 93 units over 305 images (min/median/max unit sizes 1/1/104). Each replicate recomputes global $F_1$ and score-ordered one-category COCO AP$_{50}$ (IoU .5, \texttt{maxDets}=100), preserving candidate pairing. Percentile 95\% intervals, point differences, and winner probabilities are released in the supplementary repository. The UAVDT result is interpreted as a sequence-proxy uncertainty analysis.
+
+\begin{table}[t]
+\centering\caption{Frozen candidate pool and include-all reference AP$_{50}$ point estimates at \texttt{maxDets}=100. The pool contains every raw cache available at audit freeze.}\label{tab:pool}
+\resizebox{\columnwidth}{!}{\begin{tabular}{llrl}\toprule
+Source & Frozen pool & Reference AP$_{50}$@100 & Role\\\midrule
+VisDrone & baseline640; SAHI640 & SAHI .718 / base .364 & two-variant pool\\
+Local UAVDT & baseline; tiling; YOLO11n; YOLO11m & tiling .249 / base .215 & four-variant pool\\
+AI-TOD & baseline640 & baseline .234 & single-candidate sensitivity\\
+DOTA-v2 & none & -- & structural-only\\\bottomrule
+\end{tabular}}
+\end{table}
+
+\section{Results}
+\begin{figure*}[!t]\centering\includegraphics[width=.98\textwidth]{../figures/fig2_dataset_support_coverage.pdf}\caption{Dataset support and coverage structure. (a) Source-wise raw-prediction coverage; DOTA-v2 contributes structural-scale evidence. (b),(c) Equal-box-weight ECDFs of absolute and normalized maximum side; labels give support retained at the 24-px and .015 headline thresholds. DOTA-v2 uses an axis-aligned HBB proxy derived from quadrilaterals. (d) Retained-GT curves over the complete absolute threshold grid for the three evaluated sources.}\label{fig:support}\end{figure*}
+
+Figure~\ref{fig:support} links the evaluation denominator to the target-set shift. At 24 px, VisDrone, local UAVDT, and AI-TOD retain 73.3\%, 95.1\%, and 9.7\% of boxes; at .015 they retain 89.8\%, 97.4\%, and 81.0\%. The absolute-rule curves show that one pixel cutoff selects markedly different targets across sources. Supplementary Fig.~S1 reports the corresponding normalized-support Wasserstein distances.
+
+The 24-px excluded fractions are 26.7\% [24.4,29.2], 4.9\% [0.4,7.0], and 90.3\% [89.3,91.3] for VisDrone, local UAVDT, and AI-TOD (cluster-bootstrap 95\% intervals). At confidence/IoU .25, the associated primary $F_1$ policy bands are .093, .015, and .330; normalized-rule bands are .061, .130, and .136. For AI-TOD, the ancillary exclude-and-ignore-removed rule gives $F_1=.130$ at 24 px and .317 at .015, compared with .065 and .260 under exclusion without protection. Its policy band therefore reflects both the scale of support removal and the treatment of predictions on removed targets.
+
+\begin{figure*}[!t]\centering\includegraphics[width=.98\textwidth]{../figures/fig3_f1_policy_surfaces.pdf}\caption{Full $F_1$ evaluation-sensitivity surfaces at IoU .25. Columns use the declared VisDrone--SAHI, local-UAVDT--tiling, and coverage-conditioned AI-TOD--baseline artifacts; rows use absolute and normalized support. Each cell is $\max_{\pi\in\Pi}F_1-\min_{\pi\in\Pi}F_1$ over the three primary policies at a fixed support threshold and confidence. All panels share one color scale.}\label{fig:f1surfaces}\end{figure*}
+
+Figure~\ref{fig:f1surfaces} places the headline results in their full sensitivity surfaces. AI-TOD shows broad high-sensitivity regions under absolute filtering, local UAVDT becomes strongly sensitive at larger normalized thresholds, and VisDrone changes more gradually. Maximum absolute/normalized bands are .429/.235 for VisDrone, .512/.493 for local UAVDT, and .464/.368 for AI-TOD. The surfaces describe each frozen candidate within its declared source artifact.
+
+The AP headline comprises 42 candidate records at \texttt{maxDets}=100; Table~\ref{tab:pool} gives the include-all AP$_{50}$ reference values. SAHI wins every VisDrone setting and tiling wins every local-UAVDT setting across the 12 nominal source--rule--policy checks. Local UAVDT's two source-ignore policies coincide, yielding 10 distinct outcomes. AP$_{50}$ bands span .001--.097 in local UAVDT and .023--.046 in VisDrone.
+
+The paired bootstrap adds uncertainty context to this deterministic result. Across six VisDrone settings, AP$_{50}$ differences have 95\% intervals from .339--.362 to .366--.387, all favoring SAHI. Across four local-UAVDT settings, every sequence-proxy interval contains zero (lower endpoints $-.310$--$-.296$, upper endpoints .071--.111; winner probability .471--.604). Detection-cap sensitivity is also material: after source-ignore handling, \texttt{maxDets}=100 truncates predictions in 406--490 of 548 VisDrone images and 272--292 of 305 local-UAVDT images. At \texttt{maxDets}=2000, no retained prediction is truncated (largest per-image count 1,066), the pairwise winner is unchanged in all 10 distinct outcomes, and AP$_{50}$ gaps shift by $[-.041,.048]$ relative to 100.
+
+\begin{figure*}[!t]\centering\includegraphics[width=.98\textwidth]{../figures/fig4_rank_robustness_uncertainty.pdf}\caption{Rank robustness and paired uncertainty. (a) Deterministic geometry on logarithmic axes: all declared pairwise points satisfy $\Gamma<\Delta_0$. (b)--(e) Paired-bootstrap winner--runner-up differences with 95\% intervals for six nominal headline scale--policy settings at AP$_{50}$ or $F_1$ (confidence/IoU .25 for $F_1$). I/O/N denote include-all, exclude/source-ignore-off, and exclude/source-ignore-on. Local-UAVDT AP$_{50}$ N rows duplicate O because source ignores have no effect in that artifact.}\label{fig:rank}\end{figure*}
+
+Across 84 greedy/Hungarian $F_1$ records, all 24 multi-candidate checks have the same winner; 20 remain after duplicate local-UAVDT source-ignore outcomes are collapsed. The maximum absolute $F_1$ difference is .00546 (Supplementary Fig.~S2). Figure~\ref{fig:rank} complements this deterministic agreement with paired uncertainty: all VisDrone AP$_{50}$/$F_1$ intervals are positive, whereas each local-UAVDT sequence-proxy interval contains zero.
+
+\subsection{Ranking under policy perturbation}
+Figure~\ref{fig:rank}(a) separates metric sensitivity from pairwise-rank movement. All four points satisfy the deterministic certificate on their declared headline rule sets. VisDrone AP$_{50}$ has a SAHI--baseline reference margin of .354 and a differential radius of .021; its observed minimum margin remains .354 because the gap increases under the relevant rules. Local UAVDT has an AP$_{50}$ reference margin of .034 and $\Gamma=.033$, leaving a smallest tiling--baseline margin of .0014. Its deterministic certificate holds, while the sequence-proxy intervals leave the local advantage unresolved. For $F_1$, local UAVDT has a differential radius of .00007 and a minimum margin of .191. Rank robustness is governed by movement of the pairwise margin; individual policy bands alone are insufficient.
+
+This distinction follows from common-mode response. A rule can lower two candidates by the same amount, producing large individual bands while leaving $\Delta_j(r)$ unchanged. Conversely, anti-aligned small shifts can reverse a close ranking. The conservative bound $B_{k^\star}(\mathcal R_h)+B_j(\mathcal R_h)$ ignores this correlation, whereas $\Gamma_j(\mathcal R_h)$ measures its resulting pairwise movement. We therefore use policy bands to describe metric sensitivity, differential radii to diagnose deterministic rank robustness, and the paired bootstrap to quantify uncertainty for the declared resampling unit.
+
+\subsection{Common coverage anchors comparison}
+Common coverage anchors the ranking comparison. If candidates $A$ and $B$ are observed on different image subsets $C_A$ and $C_B$, their full-source ordering depends on unobserved outcomes. Shared coverage removes that ambiguity from the declared comparison. Accordingly, AI-TOD contributes structural and policy-sensitivity evidence, while VisDrone and local UAVDT provide the multi-candidate rank analysis. Covered images with no vehicle predictions remain in the latter comparisons. A constructive proof and an $F_1$ count-perturbation bound are provided in the supplement.
+
+\section{Discussion and Reproducibility}
+The audit yields a practical reporting template: disclose artifact lineage and image coverage, report a policy band with an explicit removed-object treatment, and pair common-coverage rank results with uncertainty. On shared source-wise image sets, count MAE is 9.0/62.5 for VisDrone SAHI/baseline and 16.8/89.4 for local-UAVDT tiling/baseline.
+
+The frozen pool contains all cached raw-prediction artifacts available at audit freeze: two VisDrone variants (baseline and SAHI \cite{akyon2022slicing}), four local UAVDT variants (baseline, tiling, YOLO11n, YOLO11m), and one AI-TOD baseline. This pool defines the reported rank comparisons. Code, frozen manifests, intermediate evaluation records, figure-source data, and SHA-256 checksums are available at \url{https://anonymous.4open.science/r/aerial-evaluation-audit-5565/README.md}. Together, these records make the evaluation denominator and empty-prediction handling directly inspectable.
+
+\section{Conclusion}
+Cross-source aerial evaluation benefits from reporting support shift, policy sensitivity, and rank robustness separately. In these declared artifacts, a 24-px rule retains radically different support across sources, while normalized filtering narrows that disparity. Evaluation rules can move AP$_{50}$/$F_1$ substantially even when deterministic winners persist; paired uncertainty can still leave a local advantage unresolved. The practical recommendation is to publish the image-coverage denominator, removed-object treatment, matching contract, and uncertainty-qualified candidate-pool result alongside each cross-source comparison.
+
+\balance
+\bibliographystyle{IEEEtran}\bibliography{../paper/references}
+\end{document}
