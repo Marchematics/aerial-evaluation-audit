@@ -157,7 +157,9 @@ def fig2_dataset_support() -> None:
         ex, ey = ecdf(q)
         axs[1].plot(ex, ey, color=COLORS[source], ls=LINESTYLES[source], label=LABELS[source])
     axs[1].axvline(24, color="#222222", ls="--", lw=0.8)
-    axs[1].text(24 * 1.06, 0.06, "24 px", rotation=90, va="bottom", fontsize=5.8)
+    axs[1].annotate("24 px", xy=(24, 0.985), xycoords=("data", "axes fraction"),
+                    xytext=(-3, -2), textcoords="offset points", ha="right", va="top", fontsize=5.8,
+                    bbox=dict(facecolor="white", edgecolor="none", alpha=0.88, pad=0.45))
     abs_positions = {"visdrone": (68, 0.31), "uavdt": (30, 0.76), "aitod": (13, 0.42)}
     for source, (tx, ty) in abs_positions.items():
         axs[1].text(tx, ty, f"{LABELS[source]} {retained_abs[source]:.1f}%",
@@ -172,7 +174,9 @@ def fig2_dataset_support() -> None:
         ex, ey = ecdf(q)
         axs[2].plot(ex, ey, color=COLORS[source], ls=LINESTYLES[source], label=LABELS[source])
     axs[2].axvline(0.015, color="#222222", ls="--", lw=0.8)
-    axs[2].text(0.0158, 0.06, ".015", rotation=90, va="bottom", fontsize=5.8)
+    axs[2].annotate(".015", xy=(0.015, 0.985), xycoords=("data", "axes fraction"),
+                    xytext=(-3, -2), textcoords="offset points", ha="right", va="top", fontsize=5.8,
+                    bbox=dict(facecolor="white", edgecolor="none", alpha=0.88, pad=0.45))
     norm_positions = {"visdrone": (0.052, 0.25), "uavdt": (0.027, 0.55), "aitod": (0.0062, 0.72)}
     for source, (tx, ty) in norm_positions.items():
         axs[2].text(tx, ty, f"{LABELS[source]} {retained_norm[source]:.1f}%",
