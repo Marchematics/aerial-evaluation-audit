@@ -6,143 +6,154 @@
 \setlength{\@dblfptop}{0pt}\setlength{\@dblfpsep}{7pt}\setlength{\@dblfpbot}{0pt plus 1fil}
 \makeatother
 \emergencystretch=2em\sloppy
-\title{Auditing Annotation Support and Evaluation Sensitivity in Aerial Vehicle Detection}
+\title{Support-Conditioned Evaluation Auditing for Aerial Vehicle Detection}
 \author{Xinling Wen, Jiahao Zhang, Wenqi Liu, Yangxu Ren, and Yu Chen%
 \thanks{This work was supported by Henan provincial research, innovation, education-reform, talent, and collaborative-innovation programs (Grant Nos. 241111213000, 26IRTSTHN036, YJS2024JD48, 2025SJGLX086Y, and 254000510003).}%
 \thanks{All authors are with the School of Electronics and Information, Zhengzhou University of Aeronautics, Zhengzhou 450046, China. Xinling Wen and Yu Chen are also with the Henan Key Laboratory of General Aviation Technology and the Collaborative Innovation Center of Aeronautics and Astronautics Electronic Information Technology, Henan Province, Zhengzhou 450046, China.}%
 \thanks{Corresponding authors: Jiahao Zhang (marchematics@gmail.com) and Yu Chen (chatu@zua.edu.cn).}}
 \begin{document}\maketitle
 \begin{abstract}
-Aerial detection results are often compared as if their evaluation support were interchangeable. We introduce a provenance-aware audit that reports annotation-support shift, evaluation-policy sensitivity, and candidate-pool rank robustness. The audit covers VisDrone validation, a local UAVDT conversion, AI-TOD validation, and DOTA-v2 validation for structural analysis, totaling 141,347 vehicle boxes. Seven frozen prediction artifacts are replayed over 9,408 prespecified greedy-rule records. Raw coverage is established before class filtering, so an image with no vehicle prediction remains an evaluated empty prediction. A fixed 24-pixel rule retains 73.3\%, 95.1\%, and 9.7\% of vehicle boxes in VisDrone, local UAVDT, and AI-TOD, respectively. AP$_{50}$ bands reach .097 and $F_1$ bands reach .330. Across the two multi-candidate pools, AP$_{50}$ winners remain unchanged in 12 headline source--rule--policy checks (10 distinct policy outcomes), and greedy and threshold-first Hungarian matching agree on winners in 24 checks (20 distinct outcomes). In paired 1,000-replicate comparisons, every VisDrone AP$_{50}$/$F_1$ 95\% interval favors SAHI, whereas every local-UAVDT sequence-proxy interval contains zero. The audit therefore shows how support and evaluator choices can move reported metrics while rank conclusions require common coverage and uncertainty context.
+Aerial-detection scores can change because a small-object rule changes the annotation support being scored. We formulate support-conditioned evaluation as one chain: annotation-support mismatch, controlled support perturbation, metric uncertainty, and rank robustness on common coverage. The support layer reports retained valid ground truth under absolute and normalized rules. The perturbation layer separates target-set removal from source-ignore treatment and reports a policy band. The rank layer compares frozen configuration pools only on their shared image set and pairs margins with image-paired bootstrap intervals. At 24 pixels, the retained vehicle support is 73.3\%, 95.1\%, and 9.7\% for VisDrone, local UAVDT, and AI-TOD; at normalized support .015 it is 89.8\%, 97.4\%, and 81.0\%. In a five-configuration, 548-image VisDrone pool, headline Y11m--ASD $F_1$ margins are .0449 [.0391, .0506] at 24 pixels and .0277 [.0234, .0321] at .015, whereas observed rank-boundary cells have intervals spanning zero. The resulting audit distinguishes a changed evaluation target, a policy-sensitive metric, and an uncertainty-qualified within-pool comparison.
 \end{abstract}
-\begin{IEEEkeywords}Aerial detection, annotation support, evaluation sensitivity, benchmark auditing, vehicle detection.
+\begin{IEEEkeywords}Aerial detection, annotation support, evaluation sensitivity, rank robustness, vehicle detection.
 \end{IEEEkeywords}
 
 \section{Introduction}
-Aerial detection scores depend on both prediction artifacts and the annotation support against which they are computed. Platform, resolution, ontology, ignored regions, small-object handling, and matching conventions can all change the target of a reported metric. Existing aerial benchmarks are intentionally heterogeneous \cite{zhu2018vision,zhu2021detection,du2018unmanned,xia2018dota,lam2018xview,xu2022detecting}, and label-space differences and dataset bias further complicate comparison \cite{zhao2020object,torralba2011unbiased}.
+A reported detection score is meaningful only after its scored target is fixed. In aerial imagery, a support rule can change that target sharply: the same pixel cutoff may retain most vehicles in one source while removing most vehicles in another. Resolution, ontology, source-provided ignores, and tiny-object conventions therefore enter an evaluation result before one compares detector outputs. This issue is consequential for heterogeneous aerial benchmarks \cite{zhu2018vision,du2018unmanned,xu2022detecting,ding2021object} and complements research on dataset bias, label quality, and error diagnosis \cite{torralba2011unbiased,northcutt2021pervasive,bolya2020tide}.
 
-Recent GRSL work addresses efficient high-resolution modeling and validation bias \cite{zhu2025unetmamba,liu2025dem}. Error taxonomies and label-quality studies provide complementary evidence \cite{bolya2020tide,northcutt2021pervasive,murrugarra2025noise,schubert2024identifying}. A practical gap remains: cross-artifact detection studies rarely report the support being scored, the sensitivity of a metric to evaluation policy, and the stability of a within-pool ranking under the same declared rules. Small-object handling makes this gap especially important when pixel support is limited \cite{xu2022detecting}.
+Recent GRSL studies illustrate both the importance of high-resolution remote-sensing processing and the sensitivity of validation to geolocation conditions \cite{zhu2025unetmamba,liu2025dem}. What remains underreported in cross-artifact detection comparisons is a connected account of \emph{what annotation support changed}, \emph{how the metric reacts to that change}, and \emph{whether the resulting model conclusion holds on a common denominator}. Reporting many evaluation switches without this ordering obscures the scientific question.
 
-We address this gap with a three-part audit: (i) \emph{annotation-support shift}, the change in retained valid boxes under a declared support rule; (ii) an \emph{evaluation-policy band}, $\max_r m(r)-\min_r m(r)$ over prespecified rules $r$; and (iii) \emph{candidate-pool rank robustness}, agreement of the winner within a declared multi-candidate pool. The protocol makes the scored target explicit before cross-artifact metrics are interpreted.
+Several adjacent lines motivate this account. Unified label spaces address semantic compatibility across datasets \cite{zhao2020object}; slicing and other tiny-object procedures change the prediction process itself \cite{akyon2022slicing}; noise-aware evaluation and label-error screening study annotation reliability \cite{schubert2024identifying,murrugarra2025noise,zhu2024robust}; and error taxonomies localize detector failure modes \cite{bolya2020tide}. Our focus begins after an artifact and prediction cache are fixed: it records how an explicit change in scored support propagates into a metric and then into a within-pool decision.
 
-\section{Audit Design}
-\subsection{Artifacts and common coverage}
-We audit VisDrone2019-DET validation, a local COCO-style UAVDT conversion, AI-TOD validation, and patched DOTA-v2 validation \cite{zhu2018vision,du2018unmanned,xu2022detecting,ding2021object}. The available AI-TOD crop reconstruction is xView-derived \cite{lam2018xview}. The vehicle mapping is VisDrone \{car, van, truck, bus\}; UAVDT \{car, truck, bus\}; AI-TOD \{vehicle\}; and DOTA-v2 \{small-vehicle, large-vehicle\}. We retain VisDrone source ignores and retain all truncation and occlusion attributes. UAVDT uses the local COCO $xywh$ conversion. DOTA quadrilaterals are converted to axis-aligned boxes for structural scale analysis; it contributes no prediction-based evaluation. The provenance manifest records the patched DOTA artifact and all conversion details.
+We introduce a support-conditioned audit with the following three layers.
+\begin{enumerate}
+\item \textit{Annotation-support mismatch:} report raw prediction coverage and retained valid ground truth under absolute and normalized support rules.
+\item \textit{Controlled support perturbation:} hold prediction artifacts fixed, vary the target/ignore contract explicitly, and summarize the resulting metric uncertainty by a policy band.
+\item \textit{Rank robustness on common coverage:} compare a frozen configuration pool only on shared images, map finite-grid winner regions, and pair a point margin with image-paired uncertainty.
+\end{enumerate}
+Together, the three layers turn a reported score into a traceable support-to-decision record.
 
-\begin{table}[t]
-\centering\caption{Declared artifact support and raw-prediction coverage. A covered image with no retained vehicle-class prediction is evaluated as empty.}\label{tab:sources}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrrrr}\toprule
-Source & Eval. & Vehicle+ & Covered & Boxes & Median px & Median norm.\\
- & images & images & images & & side & side\\\midrule
-VisDrone & 548 & 519 & 548 & 17,040 & 41.0 & .0412\\
-Local UAVDT & 305 & 305 & 305 & 11,054 & 33.0 & .0278\\
-AI-TOD & 2,804 & 1,443 & 1,869 & 59,904 & 14.0 & .0175\\
-DOTA-v2 & 5,108 & 2,581 & -- & 53,349 & 18.0 & .0352\\\bottomrule
-\end{tabular}}
-\end{table}
+\section{Support-Conditioned Audit}
+\subsection{Artifacts, mapping, and coverage}
+We use VisDrone2019-DET validation, a local COCO-style UAVDT conversion, and AI-TOD validation \cite{zhu2018vision,du2018unmanned,xu2022detecting}. The available AI-TOD crop reconstruction has xView-derived provenance \cite{lam2018xview}. Vehicles are mapped as VisDrone \{car, van, truck, bus\}, local UAVDT \{car, truck, bus\}, and AI-TOD \{vehicle\}. Raw coverage is determined from image names in a prediction artifact \emph{before} class filtering; an executed image with no retained vehicle prediction is consequently evaluated as an empty prediction. Table~\ref{tab:support} gives the support denominator. DOTA-v2 quadrilateral-to-HBB scale evidence is retained as a structural supplementary check, not as a metric or rank result \cite{ding2021object}.
 
-AI-TOD has 1,869 covered images with 16,900 vehicle boxes (9.0/image; median side 12 px), compared with 43,004 boxes in 935 noncovered images (46.0/image; median side 16 px). It therefore contributes a coverage-conditioned, single-candidate sensitivity analysis. Multi-candidate rank robustness is assessed on VisDrone and local UAVDT, which have complete source-wise common coverage (548/548 and 305/305).
-
-Coverage is the presence of an image name in the \emph{raw} prediction artifact before vehicle-class filtering. This distinguishes an executed image with zero retained vehicle predictions from a missing cache record. After filtering, the former remains in the evaluation and contributes valid GT as false negatives. All within-source candidate comparisons use the source-wise common coverage in Table~\ref{tab:sources}; the AI-TOD covered/noncovered contrast is reported as selection evidence.
-
-\subsection{Evaluation contract}
-For a box $(w,h)$ in image $(W,H)$, absolute support is $s_a=\max(w,h)$ and normalized support is $s_n=\max(w/W,h/H)$. The prespecified grid contains $s_a\in\{16,20,24,28,32,40,48,64\}$ px, $s_n\in\{.005,.0075,.010,.015,.020,.030\}$, confidence $\in\{.10,.15,.20,.25,.30,.35,.40,.50\}$, and IoU $\in\{.25,.30,.40,.50\}$. The headline thresholds, 24 px and .015, are interior grid values that expose the absolute/normalized support contrast.
-
-The full surface contains 9,408 greedy records. The AP surface evaluates seven candidates under two scale rules and three policies (42 records), while the matching control uses the same scale rules and policies at confidence .25 and IoU .25/.50 (84 records). For pairwise diagnostics, $\mathcal R_h^{AP}=\{(a,24\,\mathrm{px}),(n,.015)\}\times\Pi$ and $\mathcal R_h^{F_1}=\{(a,24\,\mathrm{px}),(n,.015)\}\times\Pi$ each contain six nominal scale--policy settings; the latter fixes $c=.25$ and $\iota=.25$. The matching set is $\mathcal R_h^{match}=\{(a,24\,\mathrm{px}),(n,.015)\}\times\Pi\times\{.25,.50\}$ at $c=.25$. Exact ties are treated as rank instability.
-
-The primary policy set is $\Pi=\{I,O,N\}$: $I$=include-all, $O$=exclude/source-ignore-off, and $N$=exclude/source-ignore-on. $I$ retains all mapped valid boxes. $O$ removes below-threshold boxes while retaining predictions as eligible false positives. $N$ uses the same removal and suppresses predictions overlapping source-provided ignore regions at .5 IoU. Under $O$ and $N$, removed valid boxes retain ordinary non-ignore status. An ancillary \emph{exclude-and-ignore-removed} rule suppresses predictions on removed boxes as well as source ignores, isolating the effect of removed-object treatment.
-
-Greedy matching assigns each score-ordered prediction to the best unmatched eligible GT. Threshold-first lexicographic Hungarian matching first maximizes the number of valid IoU-threshold matches and then their total IoU, with dummy nodes for unmatched objects. Fixed-operating-point performance is global micro-$F_1=2TP/(2TP+FP+FN)$ over evaluated images. AP uses score-ordered COCO bbox evaluation \cite{lin2014microsoft} with common category 1, standard area ranges, and \texttt{maxDets}=100. The one-to-one overlap contract follows standard detection evaluation \cite{everingham2010pascal}; cache scores and hashes are retained in the candidate manifest.
-
-For a full rule $r=(d,\tau,\pi,c,\iota)$, the support shift is $1-|G_s(d,\tau)|/|G_s|$. At fixed $(d,\tau,c,\iota)$, the \emph{policy band} is
-\begin{equation*}
-B_m^{\pi}=\max_{\pi\in\Pi_s}m(d,\tau,\pi,c,\iota)-\min_{\pi\in\Pi_s}m(d,\tau,\pi,c,\iota).
-\end{equation*}
-Rank robustness is evaluated on multi-candidate pools that share $C_s$ and is the fraction of fixed settings with the same maximizing candidate.
-
-\subsection{Rank diagnostic and uncertainty}
-For a finite headline set $\mathcal R_h$, the candidate-level \emph{rule band} is $B_k(\mathcal R_h)=\max_{r\in\mathcal R_h}m_k(r)-\min_{r\in\mathcal R_h}m_k(r)$. For reference rule $r_0$ and winner $k^\star$, let $\Delta_j(r)=m_{k^\star}(r)-m_j(r)$ and
-\begin{equation*}
-\Gamma_j(\mathcal R_h)=\max_{r\in\mathcal R_h}|\Delta_j(r)-\Delta_j(r_0)|.
-\end{equation*}
-This differential radius measures policy-induced movement of the pairwise gap. Normalized support is invariant under isotropic resizing. If $\Delta_j(r_0)>\Gamma_j(\mathcal R_h)$ for every competitor $j$, then $k^\star$ remains the winner on $\mathcal R_h$; moreover, $\Gamma_j(\mathcal R_h)\leq B_{k^\star}(\mathcal R_h)+B_j(\mathcal R_h)$. Proofs and complementary bounds are provided in the supplementary material.
-
-We use a paired 1,000-replicate bootstrap (seed 20260712) of the leading and runner-up candidates. Resampling units are images for VisDrone and filename-derived sequence proxies for local UAVDT; the latter yields 93 units over 305 images (min/median/max unit sizes 1/1/104). Each replicate recomputes global $F_1$ and score-ordered one-category COCO AP$_{50}$ (IoU .5, \texttt{maxDets}=100), preserving candidate pairing. Percentile 95\% intervals, point differences, and winner probabilities are released in the supplementary repository. The UAVDT result is interpreted as a sequence-proxy uncertainty analysis.
-
-\begin{table}[t]
-\centering\caption{Frozen candidate pool and include-all reference AP$_{50}$ point estimates at \texttt{maxDets}=100. The pool contains every raw cache available at audit freeze.}\label{tab:pool}
-\resizebox{\columnwidth}{!}{\begin{tabular}{llrl}\toprule
-Source & Frozen pool & Reference AP$_{50}$@100 & Role\\\midrule
-VisDrone & baseline640; SAHI640 & SAHI .718 / base .364 & two-variant pool\\
-Local UAVDT & baseline; tiling; YOLO11n; YOLO11m & tiling .249 / base .215 & four-variant pool\\
-AI-TOD & baseline640 & baseline .234 & single-candidate sensitivity\\
-DOTA-v2 & none & -- & structural-only\\\bottomrule
-\end{tabular}}
-\end{table}
-
-\section{Results}
-\begin{figure*}[!t]\centering\includegraphics[width=.98\textwidth]{../figures/fig2_dataset_support_coverage.pdf}\caption{Dataset support and coverage structure. (a) Source-wise raw-prediction coverage; DOTA-v2 contributes structural-scale evidence. (b),(c) Equal-box-weight ECDFs of absolute and normalized maximum side; labels give support retained at the 24-px and .015 headline thresholds. DOTA-v2 uses an axis-aligned HBB proxy derived from quadrilaterals. (d) Retained-GT curves over the complete absolute threshold grid for the three evaluated sources.}\label{fig:support}\end{figure*}
-
-Figure~\ref{fig:support} links the evaluation denominator to the target-set shift. At 24 px, VisDrone, local UAVDT, and AI-TOD retain 73.3\%, 95.1\%, and 9.7\% of boxes; at .015 they retain 89.8\%, 97.4\%, and 81.0\%. The absolute-rule curves show that one pixel cutoff selects markedly different targets across sources. Supplementary Fig.~S1 reports the corresponding normalized-support Wasserstein distances.
-
-The 24-px excluded fractions are 26.7\% [24.4,29.2], 4.9\% [0.4,7.0], and 90.3\% [89.3,91.3] for VisDrone, local UAVDT, and AI-TOD (cluster-bootstrap 95\% intervals). At confidence/IoU .25, the associated primary $F_1$ policy bands are .093, .015, and .330; normalized-rule bands are .061, .130, and .136. For AI-TOD, the ancillary exclude-and-ignore-removed rule gives $F_1=.130$ at 24 px and .317 at .015, compared with .065 and .260 under exclusion without protection. Its policy band therefore reflects both the scale of support removal and the treatment of predictions on removed targets.
-
-\begin{figure*}[!t]\centering\includegraphics[width=.98\textwidth]{../figures/fig3_f1_policy_surfaces.pdf}\caption{Full $F_1$ evaluation-sensitivity surfaces at IoU .25. Columns use the declared VisDrone--SAHI, local-UAVDT--tiling, and coverage-conditioned AI-TOD--baseline artifacts; rows use absolute and normalized support. Each cell is $\max_{\pi\in\Pi}F_1-\min_{\pi\in\Pi}F_1$ over the three primary policies at a fixed support threshold and confidence. All panels share one color scale.}\label{fig:f1surfaces}\end{figure*}
-
-Figure~\ref{fig:f1surfaces} places the headline results in their full sensitivity surfaces. AI-TOD shows broad high-sensitivity regions under absolute filtering, local UAVDT becomes strongly sensitive at larger normalized thresholds, and VisDrone changes more gradually. Maximum absolute/normalized bands are .429/.235 for VisDrone, .512/.493 for local UAVDT, and .464/.368 for AI-TOD. The surfaces describe each frozen candidate within its declared source artifact.
-
-The AP headline comprises 42 candidate records at \texttt{maxDets}=100; Table~\ref{tab:pool} gives the include-all AP$_{50}$ reference values. SAHI wins every VisDrone setting and tiling wins every local-UAVDT setting across the 12 nominal source--rule--policy checks. Local UAVDT's two source-ignore policies coincide, yielding 10 distinct outcomes. AP$_{50}$ bands span .001--.097 in local UAVDT and .023--.046 in VisDrone.
-
-The paired bootstrap adds uncertainty context to this deterministic result. Across six VisDrone settings, AP$_{50}$ differences have 95\% intervals from .339--.362 to .366--.387, all favoring SAHI. Across four local-UAVDT settings, every sequence-proxy interval contains zero (lower endpoints $-.310$--$-.296$, upper endpoints .071--.111; winner probability .471--.604). Detection-cap sensitivity is also material: after source-ignore handling, \texttt{maxDets}=100 truncates predictions in 406--490 of 548 VisDrone images and 272--292 of 305 local-UAVDT images. At \texttt{maxDets}=2000, no retained prediction is truncated (largest per-image count 1,066), the pairwise winner is unchanged in all 10 distinct outcomes, and AP$_{50}$ gaps shift by $[-.041,.048]$ relative to 100.
-
-\begin{table*}[!t]
+\begin{table}[!t]
 \centering
-\caption{Minimum reporting record for an artifact-scoped aerial-detection comparison. Each item resolves a distinct interpretive question; reporting only a final score cannot do so.}\label{tab:record}
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.08}
+\caption{Support denominator and retained vehicle ground truth. Coverage is raw-prediction image coverage. $\rho_{24}$ and $\rho_{.015}$ are retained fractions at the two headline rules.}\label{tab:support}
 \small
-\begin{tabular}{p{.17\textwidth}p{.42\textwidth}p{.34\textwidth}}
+\setlength{\tabcolsep}{3.1pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{lrrrr}
 \toprule
-Audit element & Record to release & Interpretation enabled\\
+Source & Coverage & Vehicle boxes & $\rho_{24}$ & $\rho_{.015}$\\
 \midrule
-Artifact lineage & Dataset release, class mapping, annotation conversion, and ignored-region convention & Whether compared scores refer to compatible semantic targets\\
-Evaluation denominator & Annotation images, prediction-covered images, common image set, and treatment of empty predictions & Whether candidates are scored on the same evaluable population\\
-Support rule & Absolute or normalized domain, threshold grid, and retained-GT fraction & How much annotation support the metric retains\\
-Removed-object control & Include/exclude rule, source-ignore treatment, and overlap criterion & Whether predictions on excluded objects contribute false positives\\
-Metric contract & AP area and \texttt{maxDets}, or $F_1$ confidence/IoU and matcher & Which evaluation target is reproduced\\
-Rank and uncertainty & Frozen candidate pool, reference margin, differential radius, resampling unit, and interval & Whether an ordering is deterministic and uncertainty-qualified\\
+VisDrone & 548/548 & 17,040 & 73.3\% & 89.8\%\\
+Local UAVDT & 305/305 & 11,054 & 95.1\% & 97.4\%\\
+AI-TOD & 1,869/2,804 & 59,904 & 9.7\% & 81.0\%\\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}
 
-\begin{figure*}[!t]\centering\includegraphics[width=.98\textwidth]{../figures/fig4_rank_robustness_uncertainty.pdf}\caption{Rank robustness and paired uncertainty. (a) Deterministic geometry on logarithmic axes: all declared pairwise points satisfy $\Gamma<\Delta_0$. (b)--(e) Paired-bootstrap winner--runner-up differences with 95\% intervals for six nominal headline scale--policy settings at AP$_{50}$ or $F_1$ (confidence/IoU .25 for $F_1$). I/O/N denote include-all, exclude/source-ignore-off, and exclude/source-ignore-on. Local-UAVDT AP$_{50}$ N rows duplicate O because source ignores have no effect in that artifact.}\label{fig:rank}\end{figure*}
+AI-TOD has incomplete raw prediction coverage and is used in the support layer only. The metric and rank layers use the full VisDrone coverage; local UAVDT is retained for supplementary common-coverage and dense-threshold controls. The primary VisDrone pool comprises five fixed configurations: two resolutions of one baseline checkpoint (B-640 and B-1280), independently trained Y11m and ASD configurations, and a fine-tuned Y11n-P2 configuration. Every configuration has 548/548 raw-image coverage.
 
-Across 84 greedy/Hungarian $F_1$ records, all 24 multi-candidate checks have the same winner; 20 remain after duplicate local-UAVDT source-ignore outcomes are collapsed. The maximum absolute $F_1$ difference is .00546 (Supplementary Fig.~S2). Figure~\ref{fig:rank} complements this deterministic agreement with paired uncertainty: all VisDrone AP$_{50}$/$F_1$ intervals are positive, whereas each local-UAVDT sequence-proxy interval contains zero.
+\subsection{Support and perturbation contract}
+For a ground-truth box $(w,h)$ in an image $(W,H)$, define absolute and normalized support as
+\begin{equation}
+ s_a=\max(w,h), \qquad s_n=\max\left(\frac{w}{W},\frac{h}{H}\right).
+\end{equation}
+For source $s$ and rule $t$, $G_s(t)$ denotes valid mapped boxes retained by the rule, and $\rho_s(t)=|G_s(t)|/|G_s|$ is the retained-support fraction. We register $s_a\in\{16,20,24,28,32,40,48,64\}$ pixels and $s_n\in\{.005,.0075,.010,.015,.020,.030\}$; 24 pixels and .015 are the headline interior values.
 
-\subsection{Ranking under policy perturbation}
-Figure~\ref{fig:rank}(a) separates metric sensitivity from pairwise-rank movement. All four points satisfy the deterministic certificate on their declared headline rule sets. VisDrone AP$_{50}$ has a SAHI--baseline reference margin of .354 and a differential radius of .021; its observed minimum margin remains .354 because the gap increases under the relevant rules. Local UAVDT has an AP$_{50}$ reference margin of .034 and $\Gamma=.033$, leaving a smallest tiling--baseline margin of .0014. Its deterministic certificate holds, while the sequence-proxy intervals leave the local advantage unresolved. For $F_1$, local UAVDT has a differential radius of .00007 and a minimum margin of .191. Rank robustness is governed by movement of the pairwise margin; individual policy bands alone are insufficient.
+Figure~\ref{fig:perturbation}(a) defines three primary policies. $I$ retains all mapped valid boxes and enables source ignores. $O$ removes below-support valid boxes and disables source-ignore neutralization. $N$ uses the same filtered target as $O$, while enabling source ignores after valid-GT matching. Under all three policies, a prediction overlapping a removed valid box remains eligible as a false positive; the separate removed-as-ignore control is supplementary. For a fixed support rule and metric $m$, the fixed-rule policy band is
+\begin{equation}
+ B_m^{\pi}(t)=\max_{\pi\in\{I,O,N\}}m(t,\pi)-\min_{\pi\in\{I,O,N\}}m(t,\pi).
+\end{equation}
+We use global micro-$F_1$ at confidence .25 and IoU .25, with score-ordered, valid-GT-first greedy matching. Source-ignore neutralization uses the COCO crowd overlap convention: an otherwise unmatched prediction is suppressed when its intersection-over-prediction-area is at least .5 \cite{lin2014microsoft}. AP-cap and matching controls are reported separately in the supplementary material.
 
-This distinction follows from common-mode response. A rule can lower two candidates by the same amount, producing large individual bands while leaving $\Delta_j(r)$ unchanged. Conversely, anti-aligned small shifts can reverse a close ranking. The conservative bound $B_{k^\star}(\mathcal R_h)+B_j(\mathcal R_h)$ ignores this correlation, whereas $\Gamma_j(\mathcal R_h)$ measures its resulting pairwise movement. We therefore use policy bands to describe metric sensitivity, differential radii to diagnose deterministic rank robustness, and the paired bootstrap to quantify uncertainty for the declared resampling unit.
+\subsection{Common-coverage rank protocol}
+For two configurations $a,b$ and a registered rule $r$, the pairwise margin is $\Delta_{ab}(r)=m_a(r)-m_b(r)$. We evaluate margins only on the common image set and treat exact ties as unstable. The headline comparison fixes policy $N$ and IoU .25. A supplementary 14-threshold-by-eight-confidence sensitivity surface locates finite-grid decision boundaries; it does not extrapolate beyond the declared grid. For headline and observed-boundary cells, a paired bootstrap resamples the 548 images jointly for both configurations 10,000 times and reports the percentile 95\% interval of $\Delta_{ab}$.
 
-\subsection{Common coverage anchors comparison}
-Common coverage anchors the ranking comparison. If candidates $A$ and $B$ are observed on different image subsets $C_A$ and $C_B$, their full-source ordering depends on unobserved outcomes. Shared coverage removes that ambiguity from the declared comparison. Accordingly, AI-TOD contributes structural and policy-sensitivity evidence, while VisDrone and local UAVDT provide the multi-candidate rank analysis. Covered images with no vehicle predictions remain in the latter comparisons. A constructive proof and an $F_1$ count-perturbation bound are provided in the supplement.
+\section{Results}
+\subsection{Layer 1: Annotation-support mismatch}
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=.98\textwidth]{../figures/fig_support_mismatch.pdf}
+\caption{Annotation-support mismatch. (a) Raw prediction coverage establishes the evaluation denominator before vehicle-class filtering. (b) A 24-pixel cutoff retains 73.3\%, 95.1\%, and 9.7\% of vehicle ground truth in VisDrone, local UAVDT, and AI-TOD. (c) The normalized .015 rule retains 89.8\%, 97.4\%, and 81.0\%. AI-TOD is displayed for support diagnosis only because its prediction coverage is incomplete.}\label{fig:support}
+\end{figure*}
 
+Figure~\ref{fig:support} is the first link in the chain. A common 24-pixel threshold changes the retained target from nearly all local-UAVDT vehicles to fewer than one tenth of AI-TOD vehicles. The .015 normalized rule narrows this disparity, retaining 81.0--97.4\% across the three sources at the headline value. The result is not that one support domain is universally preferable; it is that the target shift is measurable and should accompany the score that follows it.
 
+The coverage record also decides which sources can progress to the later layers. AI-TOD's covered subset contains 16,900 vehicle boxes in 1,869 images (9.0 boxes/image), whereas its 935 noncovered images contain 43,004 boxes (46.0 boxes/image). We therefore retain AI-TOD for support diagnosis rather than a model comparison. The complete VisDrone and local-UAVDT records, by contrast, preserve images with empty retained predictions and their false-negative contribution.
 
-The entries in Table~\ref{tab:record} form a compact audit record rather than an additional leaderboard. Support shift answers how the target changed; a policy band answers how a score moves under declared controls; and the margin, differential radius, and paired interval answer different questions about a candidate ordering. Keeping these quantities separate prevents a policy-sensitive score from being misread as a label-error rate or a universal detector ranking.
+\subsection{Layer 2: Controlled support perturbation and metric uncertainty}
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=.98\textwidth]{../figures/fig_controlled_support_perturbation.pdf}
+\caption{Controlled support perturbation and metric uncertainty on the five-configuration VisDrone pool. (a) $I$, $O$, and $N$ differ in target-set filtering and source-ignore treatment; removed valid boxes are not converted into ignore regions. (b),(c) Each vertical span is $B_{F_1}^{\pi}(t)$ for one configuration; colored points are $I$ (blue), $O$ (red), and $N$ (green). The absolute-24-pixel bands span .031--.093, whereas normalized-.015 bands span .013--.035.}\label{fig:perturbation}
+\end{figure*}
+
+The controlled perturbation makes the score response interpretable. At 24 pixels, $F_1$ policy bands range from .031 (Y11m) to .093 (B-1280); at .015, they range from .013 (Y11n-P2) to .035 (Y11m). Filtering can raise or lower a score because it changes the valid target and the treatment of unmatched predictions. Figure~\ref{fig:perturbation} therefore reports uncertainty of the evaluation contract, rather than attributing a policy-sensitive score to an unobserved annotation-error mechanism.
+
+The $O$--$N$ comparison isolates source-ignore handling at the same filtered target. At 24 pixels, enabling valid-first source-ignore neutralization moves $F_1$ by .008--.022 across the five configurations. The larger $I$--filtered separations in Fig.~\ref{fig:perturbation} show why the support rule and removed-object treatment must be stated together: a single endpoint alone cannot reveal which evaluative change produced it.
+
+\subsection{Layer 3: Rank robustness on common coverage}
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../figures/fig_common_coverage_rank_summary.pdf}
+\caption{Common-coverage rank robustness for five fixed VisDrone configurations. (a) Blue circles are absolute-24-pixel and orange squares normalized-.015 $F_1$ values under policy $N$; all configurations use the same 548 images. (b) H-a/H-n are the two headline comparisons and B-a/B-n are observed finite-grid boundary cells. Error bars are 95\% image-paired bootstrap intervals from 10,000 resamples.}\label{fig:rank}
+\end{figure}
+
+The headline comparison is made on exactly the same 548 images for all five configurations. At absolute 24 pixels, Y11m has $F_1=.8181$ versus .7732 for ASD, giving $\Delta=.0449$ with a paired 95\% interval [.0391,.0506]. At normalized .015, the corresponding values are .8741 and .8465, with $\Delta=.0277$ [.0234,.0321]. Y11m remains the winner and ASD the runner-up at both declared headline rules; the lower B-640/B-1280 order changes, which Fig.~\ref{fig:rank}(a) makes visible rather than averaging away.
+
+Supplementary sensitivity surfaces identify where a point ordering is not an established advantage. At the normalized .010/confidence-.30 boundary, Y11m--ASD is .00015 [$-.00435$, .00477]; at the absolute-64-pixel/confidence-.35 boundary, B-640--Y11m is .00095 [$-.00492$, .00677]. Table~\ref{tab:rankrecords} records the four paired comparisons. The conclusion is therefore scoped to the declared headline rules: their Y11m--ASD margins are resolved on common coverage, whereas near-boundary ranks require an uncertainty qualifier.
+
+This contrast separates score movement from a model conclusion. A fixed rule can move several configurations in the same direction while preserving their pairwise separation. Conversely, a small differential response can overturn a near tie. The sensitivity surface locates these finite-grid decision regions; the paired interval determines whether a selected pairwise advantage is resolved at the image level.
+
+\begin{table}[!t]
+\centering
+\caption{Common-coverage paired $F_1$ records (10,000 image-paired replicates). H = headline; B = observed finite-grid boundary.}\label{tab:rankrecords}
+\small
+\setlength{\tabcolsep}{3.0pt}
+\renewcommand{\arraystretch}{1.06}
+\begin{tabular}{llrr}
+\toprule
+Cell & Pair & $\Delta$ & 95\% interval\\
+\midrule
+H-a: 24 px, .25 & Y11m--ASD & .0449 & [.0391,.0506]\\
+H-n: .015, .25 & Y11m--ASD & .0277 & [.0234,.0321]\\
+B-n: .010, .30 & Y11m--ASD & .00015 & [$-.00435$,.00477]\\
+B-a: 64 px, .35 & B-640--Y11m & .00095 & [$-.00492$,.00677]\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Discussion and Reproducibility}
-The audit yields a practical reporting template: disclose artifact lineage and image coverage, report a policy band with an explicit removed-object treatment, and pair common-coverage rank results with uncertainty. On shared source-wise image sets, count MAE is 9.0/62.5 for VisDrone SAHI/baseline and 16.8/89.4 for local-UAVDT tiling/baseline.
+The audit turns an evaluation question into a traceable sequence. First report how much annotation support remains; then expose how an explicit target/ignore perturbation moves the metric; finally state whether a frozen configuration-pool conclusion persists on common coverage and under paired uncertainty. This sequence separates target drift from metric sensitivity and from a model comparison.
 
-Operationally, the record is applied before interpreting an apparent cross-source gain. First fix the images, vehicle mapping, and empty-prediction rule; then state the support function and removed-object control; finally, replay the metric contract on the common image set. This order makes clear whether a score difference arises from a changed target, a changed evaluator, or a changed prediction artifact. It also makes an otherwise compact Letter independently checkable without requiring its reader to reconstruct implicit dataset conventions.
+For a compact comparison record, the three layers translate into three released objects: a source-level retained-support curve with the raw coverage denominator; a candidate-level table of policy endpoints and $B_m^{\pi}(t)$; and a pairwise common-coverage record containing the rule, point margin, resampling unit, and interval. These objects can accompany a conventional AP or $F_1$ table without altering a detector. They identify whether an apparent gain follows a changed target, a changed contract, or a reproducible candidate difference.
 
-The three audit outputs have complementary uses. Support shift identifies when a rule substantially changes the population being scored; the policy band identifies when that rule changes a reported metric; and the rank diagnostic identifies whether those changes threaten a declared within-pool ordering. A large band can motivate a sensitivity report without implying annotation failure, while a stable point-estimate winner still calls for paired uncertainty when the margin is small. This separation helps direct follow-up effort toward data curation, evaluation design, or model comparison as appropriate.
+\begin{table}[!t]
+\centering
+\caption{Minimal support-conditioned comparison record.}\label{tab:record}
+\small
+\setlength{\tabcolsep}{2.8pt}
+\renewcommand{\arraystretch}{1.10}
+\begin{tabular}{p{.23\columnwidth}p{.69\columnwidth}}
+\toprule
+Layer & Released primitive and question resolved\\
+\midrule
+Support & Raw image coverage, $\rho_s(t)$, and the support coordinate: \emph{which valid target is scored?}\\
+Perturbation & $I/O/N$ endpoints and $B_m^{\pi}(t)$: \emph{how much does the metric move under the declared target/ignore contract?}\\
+Rank & Common image set, pairwise $\Delta_{ab}$, resampling unit, and interval: \emph{is a pool-specific ordering resolved?}\\
+\bottomrule
+\end{tabular}
+\end{table}
 
-The frozen pool contains all cached raw-prediction artifacts available at audit freeze: two VisDrone variants (baseline and SAHI \cite{akyon2022slicing}), four local UAVDT variants (baseline, tiling, YOLO11n, YOLO11m), and one AI-TOD baseline. This pool defines the reported rank comparisons. Code, frozen manifests, intermediate evaluation records, figure-source data, and SHA-256 checksums are available at \url{https://anonymous.4open.science/r/aerial-evaluation-audit-5565/README.md}. Together, these records make the evaluation denominator and empty-prediction handling directly inspectable.
+The record is deliberately ordered. Support can be measured from annotations before predictions are replayed; metric uncertainty then holds a prediction artifact fixed while the contract changes; rank evidence is finally meaningful only after the compared configurations share the same image universe. This ordering gives a reviewer or downstream user a direct path from a plotted score to the target and comparison on which it rests.
+
+The supplementary material contains the complementary controls: full sensitivity surfaces, greedy--Hungarian matching checks, AP cap-contract checks, and structural DOTA-v2 evidence. These controls test evaluator boundaries without enlarging the central common-coverage rank claim. Code, configurations, derived evaluation records, figure-source tables, and checksums are available at \url{https://github.com/Marchematics/aerial-evaluation-audit}; licensed imagery and raw prediction artifacts remain referenced by manifest and hash.
 
 \section{Conclusion}
-Cross-source aerial evaluation benefits from reporting support shift, policy sensitivity, and rank robustness separately. In these declared artifacts, a 24-px rule retains radically different support across sources, while normalized filtering narrows that disparity. Evaluation rules can move AP$_{50}$/$F_1$ substantially even when deterministic winners persist; paired uncertainty can still leave a local advantage unresolved. The practical recommendation is to publish the image-coverage denominator, removed-object treatment, matching contract, and uncertainty-qualified candidate-pool result alongside each cross-source comparison.
+Support-conditioned auditing connects annotation-support mismatch to a controlled metric perturbation and an uncertainty-qualified rank result. On the declared aerial artifacts, this chain exposes large cross-source target shifts, policy-dependent metrics, and a clear difference between robust headline margins and unresolved boundary rankings. The practical recommendation is to release the support denominator, perturbation contract, and common-coverage paired comparison with each aerial-detection result.
 
-\balance
 \bibliographystyle{IEEEtran}\bibliography{references}
 \end{document}

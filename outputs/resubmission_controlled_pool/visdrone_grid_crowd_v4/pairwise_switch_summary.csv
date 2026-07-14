@@ -1,0 +1,11 @@
+candidate_a,candidate_b,a_wins,b_wins,min_difference,max_difference,switches_sign
+visdrone_control_asd1280,visdrone_control_baseline1280,672,0,0.022532143059730947,0.0792267627249319,False
+visdrone_control_asd1280,visdrone_control_baseline640,624,48,-0.041776831171962625,0.1275116254852663,True
+visdrone_control_asd1280,visdrone_control_yolo11m_hf640,119,553,-0.10588915080936467,0.008300300940622507,True
+visdrone_control_asd1280,visdrone_control_yolo11n_p2_1280,578,94,-0.012777332612308845,0.060244215275050306,True
+visdrone_control_baseline1280,visdrone_control_baseline640,365,307,-0.07017681262118963,0.09835013184128638,True
+visdrone_control_baseline1280,visdrone_control_yolo11m_hf640,0,672,-0.17839806313902318,-0.01740925958314732,False
+visdrone_control_baseline1280,visdrone_control_yolo11n_p2_1280,120,552,-0.0752332178286097,0.03521332592340565,True
+visdrone_control_baseline640,visdrone_control_yolo11m_hf640,10,662,-0.15200300189004268,0.01961337908331029,True
+visdrone_control_baseline640,visdrone_control_yolo11n_p2_1280,48,624,-0.09976600677409053,0.03401651423061525,True
+visdrone_control_yolo11m_hf640,visdrone_control_yolo11n_p2_1280,672,0,0.013314913270460083,0.11072692822180663,False

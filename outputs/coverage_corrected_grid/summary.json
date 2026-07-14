@@ -1,7 +1,0 @@
-{
-  "raw_multi_candidate_f1_headline_settings_iou025": 12,
-  "effective_multi_candidate_f1_policy_outcomes_iou025": 10,
-  "raw_multi_candidate_f1_headline_settings_iou025_iou050": 24,
-  "effective_multi_candidate_f1_policy_outcomes_iou025_iou050": 20,
-  "note": "AI-TOD has one candidate and is excluded from rank-stability counts. Effective counts collapse exactly duplicate source-ignore policy outcomes."
-}

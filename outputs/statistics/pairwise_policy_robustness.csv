@@ -1,5 +1,0 @@
-source,metric,winner,runner_up,reference_margin,differential_radius,minimum_margin,stable,settings
-visdrone,AP50,visdrone_sahi640,visdrone_baseline640,0.3544486086112563,0.020577114958163334,0.3544486086112563,True,6
-uavdt,AP50,uavdt_tiling,uavdt_baseline640,0.03404893830816311,0.03264064776149461,0.0014082905466684947,True,6
-visdrone,F1,visdrone_sahi640,visdrone_baseline640,0.33535753058479223,0.002578557243784474,0.33535753058479223,True,6
-uavdt,F1,uavdt_tiling,uavdt_baseline640,0.19105397739240937,6.722582226798002e-05,0.1909867515701414,True,6

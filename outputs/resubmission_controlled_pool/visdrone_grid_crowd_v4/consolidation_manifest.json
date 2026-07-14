@@ -1,0 +1,23 @@
+{
+  "version": 4,
+  "scope": "five full-coverage VisDrone configurations; corrected normalized support; valid-GT-first COCO-crowd source-ignore semantics",
+  "candidate_registry": [
+    "visdrone_control_baseline640",
+    "visdrone_control_baseline1280",
+    "visdrone_control_yolo11m_hf640",
+    "visdrone_control_asd1280",
+    "visdrone_control_yolo11n_p2_1280"
+  ],
+  "candidate_records": {
+    "visdrone_control_asd1280": 672,
+    "visdrone_control_baseline1280": 672,
+    "visdrone_control_baseline640": 672,
+    "visdrone_control_yolo11m_hf640": 672,
+    "visdrone_control_yolo11n_p2_1280": 672
+  },
+  "records": 3360,
+  "common_images_per_candidate": 548,
+  "base_record": "outputs/resubmission_controlled_pool/visdrone_grid_crowd_v3/metrics_long.parquet",
+  "extension_record": "outputs/resubmission_controlled_pool/visdrone_grid_crowd_v4_p2_extension/metrics_long.parquet",
+  "assembly_rule": "candidate-independent F1 records were concatenated only after schema, contract, coverage, and complete-grid checks"
+}

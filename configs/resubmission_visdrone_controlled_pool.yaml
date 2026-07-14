@@ -1,0 +1,39 @@
+version: 3
+status: resubmission_extension_cohort
+selection_rule: >-
+  The extension cohort is defined by fixed checkpoint provenance and common
+  10-class VisDrone compatibility before the final audited grid is computed.
+  Each listed configuration is replayed on all 548 validation images with
+  native classes preserved and a shared raw-cache schema.
+source: visdrone
+shared_vehicle_native_classes: [3, 4, 5, 8]
+support_contract:
+  absolute: max(w, h) pixels
+  normalized: max(w / W, h / H)
+  note: each box axis is normalized by its corresponding image axis; max(w,h) / max(W,H) is not used
+raw_inference:
+  confidence_floor: 0.001
+  nms_iou: 0.70
+  max_det: 5000
+  device_for_materialization: cuda:1
+candidates:
+  - id: visdrone_control_baseline640
+    model: /root/zjh_UAV_detection/experiments/visdrone/weights/baseline640_best.pt
+    imgsz: 640
+    role: same-checkpoint native-resolution control
+  - id: visdrone_control_baseline1280
+    model: /root/zjh_UAV_detection/experiments/visdrone/weights/baseline640_best.pt
+    imgsz: 1280
+    role: same-checkpoint resolution control
+  - id: visdrone_control_yolo11m_hf640
+    model: /root/zjh_UAV_detection/experiments/visdrone/weights/yolo11m_visdrone_hf.pt
+    imgsz: 640
+    role: independently trained YOLO11m configuration
+  - id: visdrone_control_asd1280
+    model: /root/zjh_UAV_detection/experiments/visdrone/weights/asd_1280_best.pt
+    imgsz: 1280
+    role: independently trained ASD configuration
+  - id: visdrone_control_yolo11n_p2_1280
+    model: /root/zjh_UAV_detection/experiments/visdrone/runs/visdrone_p2_b2s_corrected_s1_seed42/weights/best.pt
+    imgsz: 1280
+    role: independently trained YOLO11n-P2 configuration

@@ -1,0 +1,32 @@
+{
+  "scope": "five full-coverage VisDrone configurations; valid-GT-first COCO-crowd source-ignore semantics; finite declared F1 grid",
+  "coverage_per_candidate": 548,
+  "candidate_count": 5,
+  "primary_contract": {
+    "policy": "exclude_source_ignore_on",
+    "iou": 0.25,
+    "cells": 112
+  },
+  "primary_distinct_winners": [
+    "visdrone_control_asd1280",
+    "visdrone_control_baseline640",
+    "visdrone_control_yolo11m_hf640"
+  ],
+  "primary_distinct_full_rank_orders": 11,
+  "primary_minimum_winner_margin": 0.00015012054723939627,
+  "all_grid_distinct_winners": [
+    "visdrone_control_asd1280",
+    "visdrone_control_baseline640",
+    "visdrone_control_yolo11m_hf640"
+  ],
+  "all_grid_distinct_full_rank_orders": 12,
+  "all_grid_minimum_winner_margin": 0.00010173224272536086,
+  "pairwise_sign_switches": 7,
+  "candidate_registry": [
+    "visdrone_control_baseline640",
+    "visdrone_control_baseline1280",
+    "visdrone_control_yolo11m_hf640",
+    "visdrone_control_asd1280",
+    "visdrone_control_yolo11n_p2_1280"
+  ]
+}

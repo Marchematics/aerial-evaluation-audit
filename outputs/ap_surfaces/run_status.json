@@ -1,8 +1,0 @@
-{
-  "requested_rows": 126,
-  "verified_rows": 0,
-  "status": "not_materialized",
-  "reason": "The COCO per-image evaluator remained compute-bound under concurrent detector training jobs; partial task logs were discarded rather than treated as a completed surface.",
-  "scope": "three sources x absolute/normalized thresholds x three small-object policies",
-  "decision": "No AP-surface claim is used in the manuscript or readiness report."
-}
