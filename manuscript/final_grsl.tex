@@ -95,6 +95,26 @@ The AP headline comprises 42 candidate records at \texttt{maxDets}=100; Table~\r
 
 The paired bootstrap adds uncertainty context to this deterministic result. Across six VisDrone settings, AP$_{50}$ differences have 95\% intervals from .339--.362 to .366--.387, all favoring SAHI. Across four local-UAVDT settings, every sequence-proxy interval contains zero (lower endpoints $-.310$--$-.296$, upper endpoints .071--.111; winner probability .471--.604). Detection-cap sensitivity is also material: after source-ignore handling, \texttt{maxDets}=100 truncates predictions in 406--490 of 548 VisDrone images and 272--292 of 305 local-UAVDT images. At \texttt{maxDets}=2000, no retained prediction is truncated (largest per-image count 1,066), the pairwise winner is unchanged in all 10 distinct outcomes, and AP$_{50}$ gaps shift by $[-.041,.048]$ relative to 100.
 
+\begin{table*}[!t]
+\centering
+\caption{Minimum reporting record for an artifact-scoped aerial-detection comparison. Each item resolves a distinct interpretive question; reporting only a final score cannot do so.}\label{tab:record}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.08}
+\small
+\begin{tabular}{p{.17\textwidth}p{.42\textwidth}p{.34\textwidth}}
+\toprule
+Audit element & Record to release & Interpretation enabled\\
+\midrule
+Artifact lineage & Dataset release, class mapping, annotation conversion, and ignored-region convention & Whether compared scores refer to compatible semantic targets\\
+Evaluation denominator & Annotation images, prediction-covered images, common image set, and treatment of empty predictions & Whether candidates are scored on the same evaluable population\\
+Support rule & Absolute or normalized domain, threshold grid, and retained-GT fraction & How much annotation support the metric retains\\
+Removed-object control & Include/exclude rule, source-ignore treatment, and overlap criterion & Whether predictions on excluded objects contribute false positives\\
+Metric contract & AP area and \texttt{maxDets}, or $F_1$ confidence/IoU and matcher & Which evaluation target is reproduced\\
+Rank and uncertainty & Frozen candidate pool, reference margin, differential radius, resampling unit, and interval & Whether an ordering is deterministic and uncertainty-qualified\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 \begin{figure*}[!t]\centering\includegraphics[width=.98\textwidth]{../figures/fig4_rank_robustness_uncertainty.pdf}\caption{Rank robustness and paired uncertainty. (a) Deterministic geometry on logarithmic axes: all declared pairwise points satisfy $\Gamma<\Delta_0$. (b)--(e) Paired-bootstrap winner--runner-up differences with 95\% intervals for six nominal headline scale--policy settings at AP$_{50}$ or $F_1$ (confidence/IoU .25 for $F_1$). I/O/N denote include-all, exclude/source-ignore-off, and exclude/source-ignore-on. Local-UAVDT AP$_{50}$ N rows duplicate O because source ignores have no effect in that artifact.}\label{fig:rank}\end{figure*}
 
 Across 84 greedy/Hungarian $F_1$ records, all 24 multi-candidate checks have the same winner; 20 remain after duplicate local-UAVDT source-ignore outcomes are collapsed. The maximum absolute $F_1$ difference is .00546 (Supplementary Fig.~S2). Figure~\ref{fig:rank} complements this deterministic agreement with paired uncertainty: all VisDrone AP$_{50}$/$F_1$ intervals are positive, whereas each local-UAVDT sequence-proxy interval contains zero.
@@ -107,8 +127,16 @@ This distinction follows from common-mode response. A rule can lower two candida
 \subsection{Common coverage anchors comparison}
 Common coverage anchors the ranking comparison. If candidates $A$ and $B$ are observed on different image subsets $C_A$ and $C_B$, their full-source ordering depends on unobserved outcomes. Shared coverage removes that ambiguity from the declared comparison. Accordingly, AI-TOD contributes structural and policy-sensitivity evidence, while VisDrone and local UAVDT provide the multi-candidate rank analysis. Covered images with no vehicle predictions remain in the latter comparisons. A constructive proof and an $F_1$ count-perturbation bound are provided in the supplement.
 
+
+
+The entries in Table~\ref{tab:record} form a compact audit record rather than an additional leaderboard. Support shift answers how the target changed; a policy band answers how a score moves under declared controls; and the margin, differential radius, and paired interval answer different questions about a candidate ordering. Keeping these quantities separate prevents a policy-sensitive score from being misread as a label-error rate or a universal detector ranking.
+
 \section{Discussion and Reproducibility}
 The audit yields a practical reporting template: disclose artifact lineage and image coverage, report a policy band with an explicit removed-object treatment, and pair common-coverage rank results with uncertainty. On shared source-wise image sets, count MAE is 9.0/62.5 for VisDrone SAHI/baseline and 16.8/89.4 for local-UAVDT tiling/baseline.
+
+Operationally, the record is applied before interpreting an apparent cross-source gain. First fix the images, vehicle mapping, and empty-prediction rule; then state the support function and removed-object control; finally, replay the metric contract on the common image set. This order makes clear whether a score difference arises from a changed target, a changed evaluator, or a changed prediction artifact. It also makes an otherwise compact Letter independently checkable without requiring its reader to reconstruct implicit dataset conventions.
+
+The three audit outputs have complementary uses. Support shift identifies when a rule substantially changes the population being scored; the policy band identifies when that rule changes a reported metric; and the rank diagnostic identifies whether those changes threaten a declared within-pool ordering. A large band can motivate a sensitivity report without implying annotation failure, while a stable point-estimate winner still calls for paired uncertainty when the margin is small. This separation helps direct follow-up effort toward data curation, evaluation design, or model comparison as appropriate.
 
 The frozen pool contains all cached raw-prediction artifacts available at audit freeze: two VisDrone variants (baseline and SAHI \cite{akyon2022slicing}), four local UAVDT variants (baseline, tiling, YOLO11n, YOLO11m), and one AI-TOD baseline. This pool defines the reported rank comparisons. Code, frozen manifests, intermediate evaluation records, figure-source data, and SHA-256 checksums are available at \url{https://anonymous.4open.science/r/aerial-evaluation-audit-5565/README.md}. Together, these records make the evaluation denominator and empty-prediction handling directly inspectable.
 
