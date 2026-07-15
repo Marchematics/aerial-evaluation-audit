@@ -13,7 +13,7 @@
 \thanks{Corresponding authors: Jiahao Zhang (marchematics@gmail.com) and Yu Chen (chatu@zua.edu.cn).}}
 \begin{document}\maketitle
 \begin{abstract}
-Aerial-detection scores can change because a small-object rule changes the annotation support being scored. We formulate support-conditioned evaluation as one chain: annotation-support mismatch, controlled support perturbation, metric uncertainty, and rank robustness on common coverage. The support layer reports retained valid ground truth under absolute and normalized rules. The perturbation layer separates target-set removal from source-ignore treatment and reports a policy band. The rank layer compares frozen configuration pools only on their shared image set and pairs margins with image-paired bootstrap intervals. At 24 pixels, retained vehicle support is 73.3\%, 95.1\%, and 9.7\% for VisDrone, local UAVDT, and AI-TOD; at normalized .015 it is 89.8\%, 97.4\%, and 81.0\%. For one registered baseline artifact per source, the corresponding $F_1$ policy bands are .036/.025, .009/.002, and .330/.136; the AI-TOD values are conditioned on its 1,869 covered images. In a five-configuration, 548-image VisDrone pool, headline Y11m--ASD margins are .0449 [.0391, .0506] and .0277 [.0234, .0321], whereas observed rank-boundary intervals span zero. The audit distinguishes a changed target, a policy-sensitive metric, and an uncertainty-qualified within-pool comparison.
+Aerial-detection scores can change because a small-object rule changes the annotation support being scored. We formulate support-conditioned evaluation as one chain: annotation-support mismatch, controlled support perturbation, metric uncertainty, and rank robustness on common coverage. The support layer reports retained valid ground truth under absolute and normalized rules. The perturbation layer separates target-set removal from source-ignore treatment and reports a policy band. The rank layer compares frozen configuration pools only on their shared image set and pairs margins with image-paired bootstrap intervals. At 24 pixels, retained vehicle support is 73.3\%, 95.1\%, and 9.7\% for VisDrone, UAVDT, and AI-TOD; at normalized .015 it is 89.8\%, 97.4\%, and 81.0\%. For one registered baseline artifact per source, the corresponding $F_1$ policy bands are .036/.025, .009/.002, and .330/.136; the AI-TOD values are conditioned on its 1,869 covered images. In a five-configuration, 548-image VisDrone pool, headline Y11m--ASD margins are .0449 [.0391, .0506] and .0277 [.0234, .0321], whereas observed rank-boundary intervals span zero. The audit distinguishes a changed target, a policy-sensitive metric, and an uncertainty-qualified within-pool comparison.
 \end{abstract}
 \begin{IEEEkeywords}Aerial detection, annotation support, evaluation sensitivity, rank robustness, vehicle detection.
 \end{IEEEkeywords}
@@ -35,7 +35,7 @@ Together, the three layers turn a reported score into a traceable support-to-dec
 
 \section{Support-Conditioned Audit}
 \subsection{Artifacts, mapping, and coverage}
-We use VisDrone2019-DET validation, a local COCO-style UAVDT conversion, and AI-TOD validation \cite{zhu2018vision,du2018unmanned,xu2022detecting}. The available AI-TOD crop reconstruction has xView-derived provenance \cite{lam2018xview}. Vehicles are mapped as VisDrone \{car, van, truck, bus\}, local UAVDT \{car, truck, bus\}, and AI-TOD \{vehicle\}. Raw coverage is determined from image names in a prediction artifact \emph{before} class filtering; an executed image with no retained vehicle prediction is consequently evaluated as an empty prediction. Table~\ref{tab:support} gives the support denominator. DOTA-v2 quadrilateral-to-HBB scale evidence is retained as a structural supplementary check, not as a metric or rank result \cite{ding2021object}.
+We use VisDrone2019-DET validation, the UAVDT test split represented in COCO format for the common evaluator, and AI-TOD validation \cite{zhu2018vision,du2018unmanned,xu2022detecting}. The available AI-TOD crop reconstruction has xView-derived provenance \cite{lam2018xview}. Vehicles are mapped as VisDrone \{car, van, truck, bus\}, UAVDT \{car, truck, bus\}, and AI-TOD \{vehicle\}. Raw coverage is determined from image names in a prediction artifact \emph{before} class filtering; an executed image with no retained vehicle prediction is consequently evaluated as an empty prediction. Table~\ref{tab:support} gives the support denominator. DOTA-v2 quadrilateral-to-HBB scale evidence is retained as a structural supplementary check, not as a metric or rank result \cite{ding2021object}.
 
 \begin{table}[!t]
 \centering
@@ -48,13 +48,13 @@ We use VisDrone2019-DET validation, a local COCO-style UAVDT conversion, and AI-
 Source & Coverage & Vehicle boxes & $\rho_{24}$ & $\rho_{.015}$\\
 \midrule
 VisDrone & 548/548 & 17,040 & 73.3\% & 89.8\%\\
-Local UAVDT & 305/305 & 11,054 & 95.1\% & 97.4\%\\
+UAVDT & 305/305 & 11,054 & 95.1\% & 97.4\%\\
 AI-TOD & 1,869/2,804 & 59,904 & 9.7\% & 81.0\%\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The metric layer replays one registered baseline artifact per source. Its VisDrone and local-UAVDT records have complete image coverage; the AI-TOD record is explicitly conditioned on the 1,869 covered images. The rank layer is narrower: its primary VisDrone pool comprises five fixed configurations---two resolutions of one baseline checkpoint (B-640 and B-1280), independently trained Y11m and ASD configurations, and a fine-tuned Y11n-P2 configuration---each with 548/548 raw-image coverage. Local UAVDT remains an ancillary full-coverage ranking control; AI-TOD is excluded from rank claims.
+The metric layer replays one registered baseline artifact per source. Its VisDrone and UAVDT records have complete image coverage; the AI-TOD record is explicitly conditioned on the 1,869 covered images. The rank layer is narrower: its primary VisDrone pool comprises five fixed configurations---two resolutions of one baseline checkpoint (B-640 and B-1280), independently trained Y11m and ASD configurations, and a fine-tuned Y11n-P2 configuration---each with 548/548 raw-image coverage. UAVDT remains an ancillary full-coverage ranking control; AI-TOD is excluded from rank claims.
 
 \subsection{Support and perturbation contract}
 For a ground-truth box $(w,h)$ in an image $(W,H)$, define absolute and normalized support as
@@ -97,12 +97,12 @@ The certificate concerns a declared finite rule set. The paired bootstrap instea
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=.98\textwidth]{../figures/fig_support_mismatch.pdf}
-\caption{Annotation-support mismatch. (a) Raw prediction coverage establishes the evaluation denominator before vehicle-class filtering. (b) A 24-pixel cutoff retains 73.3\%, 95.1\%, and 9.7\% of vehicle ground truth in VisDrone, local UAVDT, and AI-TOD. (c) The normalized .015 rule retains 89.8\%, 97.4\%, and 81.0\%. AI-TOD is displayed for support diagnosis only because its prediction coverage is incomplete.}\label{fig:support}
+\caption{Annotation-support mismatch. (a) Raw prediction coverage establishes the evaluation denominator before vehicle-class filtering. (b) A 24-pixel cutoff retains 73.3\%, 95.1\%, and 9.7\% of vehicle ground truth in VisDrone, UAVDT, and AI-TOD. (c) The normalized .015 rule retains 89.8\%, 97.4\%, and 81.0\%. AI-TOD is displayed for support diagnosis only because its prediction coverage is incomplete.}\label{fig:support}
 \end{figure*}
 
-Figure~\ref{fig:support} is the first link in the chain. A common 24-pixel threshold changes the retained target from nearly all local-UAVDT vehicles to fewer than one tenth of AI-TOD vehicles. The .015 normalized rule narrows this disparity, retaining 81.0--97.4\% across the three sources at the headline value. The result is not that one support domain is universally preferable; it is that the target shift is measurable and should accompany the score that follows it.
+Figure~\ref{fig:support} is the first link in the chain. A common 24-pixel threshold changes the retained target from nearly all UAVDT vehicles to fewer than one tenth of AI-TOD vehicles. The .015 normalized rule narrows this disparity, retaining 81.0--97.4\% across the three sources at the headline value. The result is not that one support domain is universally preferable; it is that the target shift is measurable and should accompany the score that follows it.
 
-The coverage record also decides which sources can progress to the later layers. AI-TOD's covered subset contains 16,900 vehicle boxes in 1,869 images (9.0 boxes/image), whereas its 935 noncovered images contain 43,004 boxes (46.0 boxes/image). We therefore retain AI-TOD for support diagnosis rather than a model comparison. The complete VisDrone and local-UAVDT records, by contrast, preserve images with empty retained predictions and their false-negative contribution.
+The coverage record also decides which sources can progress to the later layers. AI-TOD's covered subset contains 16,900 vehicle boxes in 1,869 images (9.0 boxes/image), whereas its 935 noncovered images contain 43,004 boxes (46.0 boxes/image). We therefore retain AI-TOD for support diagnosis rather than a model comparison. The complete VisDrone and UAVDT records, by contrast, preserve images with empty retained predictions and their false-negative contribution.
 
 \subsection{Layer 2: Controlled perturbation across three sources}
 \begin{figure*}[!t]
@@ -124,7 +124,7 @@ Source & Candidate & Coverage & Rule & $\rho_{\rm cov}$ & $I$ & $O$ & $N$ & $B_{
 \midrule
 VisDrone & B-640 & 548/548 & 24 px & 73.3\% & .7719 & .7359 & .7438 & .0360\\
          &       &         & .015  & 89.8\% & .7719 & .7897 & .7973 & .0254\\
-Local UAVDT & UAVDT-Base & 305/305 & 24 px & 95.1\% & .3453 & .3367 & .3367 & .0085\\
+UAVDT & UAVDT-Base & 305/305 & 24 px & 95.1\% & .3453 & .3367 & .3367 & .0085\\
             &            &         & .015  & 97.4\% & .3453 & .3430 & .3430 & .0023\\
 AI-TOD$^\dagger$ & AI-TOD-Base & 1,869/2,804 & 24 px & 12.0\% & .3952 & .0648 & .0648 & .3303\\
                   &             &             & .015  & 55.3\% & .3952 & .2593 & .2593 & .1359\\
@@ -133,13 +133,13 @@ AI-TOD$^\dagger$ & AI-TOD-Base & 1,869/2,804 & 24 px & 12.0\% & .3952 & .0648 & 
 \vspace{1pt}\parbox{.96\textwidth}{\footnotesize $^\dagger$AI-TOD endpoints and $\rho_{\rm cov}$ are conditioned on the 1,869 images with raw prediction coverage; the source-level support fractions over all 2,804 images are 9.7\% and 81.0\% in Table~\ref{tab:support}.}
 \end{table*}
 
-Table~\ref{tab:endpoints} traces the support mismatch into the metric layer under one baseline artifact per source. At 24 pixels, the policy band is .036 for VisDrone, .009 for local UAVDT, and .330 for coverage-conditioned AI-TOD; at .015, the corresponding bands are .025, .002, and .136. The same nominal rule therefore produces not only different retained targets but also markedly different metric responses. AI-TOD's covered subset is reported rather than silently treated as the full validation set.
+Table~\ref{tab:endpoints} traces the support mismatch into the metric layer under one baseline artifact per source. At 24 pixels, the policy band is .036 for VisDrone, .009 for UAVDT, and .330 for coverage-conditioned AI-TOD; at .015, the corresponding bands are .025, .002, and .136. The same nominal rule therefore produces not only different retained targets but also markedly different metric responses. AI-TOD's covered subset is reported rather than silently treated as the full validation set.
 
 Within the five-configuration VisDrone pool, Fig.~\ref{fig:perturbation} shows that 24-pixel bands range from .031 (Y11m) to .093 (B-1280); at .015, they range from .013 (Y11n-P2) to .035 (Y11m). Filtering can raise or lower a score because it changes the valid target and the treatment of unmatched predictions. The figure therefore reports uncertainty of the evaluation contract, rather than attributing a policy-sensitive score to an unobserved annotation-error mechanism.
 
 The $O$--$N$ comparison isolates source-ignore handling at the same filtered target. At 24 pixels, enabling valid-first source-ignore neutralization moves $F_1$ by .008--.022 across the five configurations. The larger $I$--filtered separations in Fig.~\ref{fig:perturbation} show why the support rule and removed-object treatment must be stated together: a single endpoint alone cannot reveal which evaluative change produced it.
 
-For the VisDrone B-640 artifact, $N$ is below $I$ at 24 pixels but above $I$ at .015. Because predictions are unchanged, this sign change cannot be interpreted as detector improvement or degradation. Local UAVDT and AI-TOD contain no active source-ignore regions in this mapping, so $O=N$ there; their bands isolate target filtering. The nonzero VisDrone $O$--$N$ separation isolates source-ignore neutralization at the same filtered target.
+For the VisDrone B-640 artifact, $N$ is below $I$ at 24 pixels but above $I$ at .015. Because predictions are unchanged, this sign change cannot be interpreted as detector improvement or degradation. UAVDT and AI-TOD contain no active source-ignore regions in this mapping, so $O=N$ there; their bands isolate target filtering. The nonzero VisDrone $O$--$N$ separation isolates source-ignore neutralization at the same filtered target.
 
 \subsection{Layer 3: Rank robustness on common coverage}
 \begin{figure}[!t]

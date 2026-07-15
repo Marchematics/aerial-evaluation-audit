@@ -100,7 +100,7 @@ def main() -> None:
         ax.set_xlim(left=0)
         ax.set_ylim(0, 1.01)
         ax.set_xlabel("Vehicle predictions / image")
-        ax.set_title({"visdrone": "VisDrone", "uavdt": "Local UAVDT", "aitod": "AI-TOD"}[source], fontsize=8)
+        ax.set_title({"visdrone": "VisDrone", "uavdt": "UAVDT", "aitod": "AI-TOD"}[source], fontsize=8)
         ax.grid(True, axis="y", alpha=.25, lw=.5)
         if source == sources[0]:
             ax.set_ylabel("ECDF")

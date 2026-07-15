@@ -34,7 +34,7 @@ SOURCES = {
         "source_key": "visdrone",
         "denominator_images": 548,
     },
-    "Local UAVDT": {
+    "UAVDT": {
         "candidate": "UAVDT-Base",
         "path": Path("/root/zjh_UAV_detection/experiments/uavdt/oracle_route/"
                      "cache_val_baseline640/pred_rows.parquet"),

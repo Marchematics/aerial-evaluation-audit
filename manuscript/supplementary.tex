@@ -98,7 +98,7 @@ Table~\ref{tab:retention} gives the pooled box-level support fractions for every
 \renewcommand{\arraystretch}{1.05}
 \begin{tabular}{llrrr@{\qquad}llrrr}
 \toprule
-Rule & Threshold & VisDrone & Local UAVDT & AI-TOD & Rule & Threshold & VisDrone & Local UAVDT & AI-TOD\\
+Rule & Threshold & VisDrone & UAVDT & AI-TOD & Rule & Threshold & VisDrone & UAVDT & AI-TOD\\
 \midrule
 Absolute & 16 px & 85.7 & 99.6 & 47.6 & Normalized & .0050 & 100.0 & 100.0 & 99.9\\
 Absolute & 20 px & 79.5 & 98.8 & 20.4 & Normalized & .0075 & 98.8 & 100.0 & 99.6\\
@@ -113,7 +113,7 @@ Absolute & 64 px & 27.7 & 17.7 & 0.4 & & & & &\\
 \end{table*}
 \FloatBarrier
 
-The incomplete AI-TOD coverage is materially structured: the 1,869 covered images contain 16,900 vehicle boxes (9.0 per image), while 935 noncovered images contain 43,004 boxes (46.0 per image). This is why it remains a support-diagnosis source rather than a denominator for paired model ranking. Local UAVDT remains in the released record for its full coverage and support profile; the main rank analysis uses the expanded VisDrone pool to provide a five-configuration, common-coverage comparison.
+The incomplete AI-TOD coverage is materially structured: the 1,869 covered images contain 16,900 vehicle boxes (9.0 per image), while 935 noncovered images contain 43,004 boxes (46.0 per image). This is why it remains a support-diagnosis source rather than a denominator for paired model ranking. UAVDT remains in the released record for its full coverage and support profile; the main rank analysis uses the expanded VisDrone pool to provide a five-configuration, common-coverage comparison.
 
 \begin{table}[!t]
 \centering
@@ -126,7 +126,7 @@ The incomplete AI-TOD coverage is materially structured: the 1,869 covered image
 Source & Raw coverage & Role in this manuscript\\
 \midrule
 VisDrone & 548/548 & Support, perturbation, and common-coverage rank pool.\\
-Local UAVDT & 305/305 & Support record and ancillary full-coverage control.\\
+UAVDT & 305/305 & Support record and ancillary full-coverage control.\\
 AI-TOD & 1,869/2,804 & Support diagnosis only; no rank denominator.\\
 DOTA-v2 & structural & Horizontal-box proxy for structural scale evidence only.\\
 \bottomrule

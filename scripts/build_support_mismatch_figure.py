@@ -16,7 +16,7 @@ COVERAGE = ROOT / "outputs" / "coverage" / "source_common_intersection.csv"
 OUT = ROOT / "figures" / "fig_support_mismatch.pdf"
 
 SOURCES = ["visdrone", "uavdt", "aitod"]
-LABEL = {"visdrone": "VisDrone", "uavdt": "Local UAVDT", "aitod": "AI-TOD*"}
+LABEL = {"visdrone": "VisDrone", "uavdt": "UAVDT", "aitod": "AI-TOD*"}
 COLORS = {"visdrone": "#0072B2", "uavdt": "#D55E00", "aitod": "#009E73"}
 STYLES = {"visdrone": "-", "uavdt": "--", "aitod": "-."}
 ABS = np.array([16, 20, 24, 28, 32, 40, 48, 64], dtype=float)

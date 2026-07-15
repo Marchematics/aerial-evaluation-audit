@@ -23,7 +23,7 @@ SHORT = {
 }
 ORDER = list(SHORT)
 SOURCES = ["visdrone", "uavdt", "aitod", "dota_v2_val"]
-LABELS = ["VisDrone", "Local\nUAVDT", "AI-TOD", "DOTA-v2"]
+LABELS = ["VisDrone", "UAVDT", "AI-TOD", "DOTA-v2"]
 
 
 def draw_cap(ax: plt.Axes) -> None:
