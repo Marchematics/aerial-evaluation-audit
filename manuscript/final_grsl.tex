@@ -63,7 +63,7 @@ For a ground-truth box $(w,h)$ in an image $(W,H)$, define absolute and normaliz
 \end{equation}
 For source $s$ and rule $t$, $G_s(t)$ denotes valid mapped boxes retained by the rule, and $\rho_s(t)=|G_s(t)|/|G_s|$ is the retained-support fraction. We register $s_a\in\{16,20,24,28,32,40,48,64\}$ pixels and $s_n\in\{.005,.0075,.010,.015,.020,.030\}$; 24 pixels and .015 are the headline interior values.
 
-Figure~\ref{fig:perturbation}(a) defines three primary policies. $I$ retains all mapped valid boxes and enables source ignores. $O$ removes below-support valid boxes and disables source-ignore neutralization. $N$ uses the same filtered target as $O$, while enabling source ignores after valid-GT matching. Under all three policies, a prediction overlapping a removed valid box remains eligible as a false positive; the separate removed-as-ignore control is supplementary. For a fixed support rule and metric $m$, the fixed-rule policy band is
+We define three primary policies. $I$ retains all mapped valid boxes and enables source ignores. $O$ removes below-support valid boxes and disables source-ignore neutralization. $N$ uses the same filtered target as $O$, while enabling source ignores after valid-GT matching. Under all three policies, a prediction overlapping a removed valid box remains eligible as a false positive; the separate removed-as-ignore control is supplementary. For a fixed support rule and metric $m$, the fixed-rule policy band is
 \begin{equation}
  B_m^{\pi}(t)=\max_{\pi\in\{I,O,N\}}m(t,\pi)-\min_{\pi\in\{I,O,N\}}m(t,\pi).
 \end{equation}
@@ -88,7 +88,7 @@ The coverage record also decides which sources can progress to the later layers.
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=.98\textwidth]{../figures/fig_controlled_support_perturbation.pdf}
-\caption{Controlled support perturbation and metric uncertainty on the five-configuration VisDrone pool. (a) $I$, $O$, and $N$ differ in target-set filtering and source-ignore treatment; removed valid boxes are not converted into ignore regions. (b),(c) Each vertical span is $B_{F_1}^{\pi}(t)$ for one configuration; colored points are $I$ (blue), $O$ (red), and $N$ (green). The absolute-24-pixel bands span .031--.093, whereas normalized-.015 bands span .013--.035.}\label{fig:perturbation}
+\caption{Controlled support perturbation and metric uncertainty on the five-configuration VisDrone pool. Each vertical span is $B_{F_1}^{\pi}(t)$ for one configuration; colored points are $I$ (blue), $O$ (red), and $N$ (green). (a) Absolute-24-pixel bands span .031--.093. (b) Normalized-.015 bands span .013--.035.}\label{fig:perturbation}
 \end{figure*}
 
 The controlled perturbation makes the score response interpretable. At 24 pixels, $F_1$ policy bands range from .031 (Y11m) to .093 (B-1280); at .015, they range from .013 (Y11n-P2) to .035 (Y11m). Filtering can raise or lower a score because it changes the valid target and the treatment of unmatched predictions. Figure~\ref{fig:perturbation} therefore reports uncertainty of the evaluation contract, rather than attributing a policy-sensitive score to an unobserved annotation-error mechanism.
