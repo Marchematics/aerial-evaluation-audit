@@ -1,32 +1,46 @@
-version: 1
+version: 2
 claims:
   - claim_id: C01
-    claim: "The available aerial data artifacts differ in vehicle-class support and box-size distributions."
+    claim: "The declared source artifacts differ in prediction coverage and retained vehicle support."
     status: observed
-    evidence: [outputs/label_reliability/m25_scale_support/vehicle_scale_records.csv, outputs/label_reliability/m27_visdrone_aitod_bridge/provenance_summary.json]
-    allowed_wording: "observed structural difference among the declared artifacts"
-    forbidden_wording: ["which dataset is more correct", "universal benchmark property"]
+    evidence:
+      - outputs/coverage/source_common_intersection.csv
+      - outputs/scale/box_scale_records.parquet
+      - outputs/coverage_qualification/coverage_qualification.json
+    allowed_wording: "observed coverage and support differences among the declared artifacts"
+    forbidden_wording: ["annotation-error rate", "which dataset is correct", "universal benchmark property"]
+
   - claim_id: C02
-    claim: "Absolute and normalized scale rules can produce different reported support."
+    claim: "The ordered A-to-F-to-R-to-S path attributes endpoint movement to target filtering, removed-object neutralization, and source-ignore handling."
     status: deterministic
-    evidence: [outputs/label_reliability/m25_scale_support/scale_threshold_bootstrap.csv]
-    allowed_wording: "evaluation-rule sensitivity"
-    forbidden_wording: ["physical scale mismatch", "annotation error"]
+    evidence:
+      - outputs/contract_path/contract_endpoints.csv
+      - outputs/contract_path/contract_transition_ledger.csv
+    allowed_wording: "path-specific evaluator transition with an exact count ledger"
+    forbidden_wording: ["order-free causal effect", "annotation correction"]
+
   - claim_id: C03
-    claim: "Evaluation rules can change candidate-pool configuration rankings."
-    status: pending
-    evidence: [outputs/label_reliability/m14_detector_rule_consequence/detector_rule_rank_changes.csv]
-    allowed_wording: "candidate-pool ranking under the declared rules"
-    forbidden_wording: ["detector-wide leaderboard", "causal policy effect"]
-  - claim_id: C04
-    claim: "Frame-level vehicle-count and activity-tier products are sensitive to evaluation rules."
-    status: pending
-    evidence: [outputs/rule_grid/count_metrics.csv, outputs/rule_grid/traffic_activity_metrics.csv]
-    allowed_wording: "frame-level vehicle-count product"
-    forbidden_wording: ["physical traffic density", "ground-truth traffic state"]
-  - claim_id: C05
-    claim: "The UAVDT test split is represented in COCO format for the common evaluator, with raw-to-conversion lineage checked."
+    claim: "For the named Y11m--ASD pair, localization and score integration can yield different conclusions on the same common-coverage VisDrone images."
     status: observed
-    evidence: [outputs/label_reliability/m24_uavdt_conversion_lineage/UAVDT_CONVERSION_LINEAGE.md, DATA_PROVENANCE.md]
-    allowed_wording: "UAVDT test split represented in COCO format"
-    forbidden_wording: ["locally created UAVDT benchmark", "synthetic UAVDT ground truth"]
+    evidence:
+      - outputs/metric_factorial_control/factorial_points.csv
+      - outputs/metric_factorial_control/factorial_pairwise_bootstrap.csv
+    allowed_wording: "metric-qualified named-pair conclusion under the declared contracts"
+    forbidden_wording: ["detector-wide leaderboard", "universal detector ranking", "causal model superiority"]
+
+  - claim_id: C04
+    claim: "A sequence-resolved ASD-favoring normalized conclusion appears only in the cell combining valid-match IoU .50 with score-integrated AP."
+    status: observed
+    evidence:
+      - outputs/metric_factorial_control/factorial_pairwise_bootstrap.csv
+    allowed_wording: "observed interaction pattern in the declared 2-by-2 control"
+    forbidden_wording: ["general law of AP", "causal mechanism outside the audited pair"]
+
+  - claim_id: C05
+    claim: "AI-TOD metric replay is conditional on the covered subset and does not support a full-benchmark rank statement."
+    status: observed
+    evidence:
+      - outputs/coverage/aitod_coverage_selection_audit.csv
+      - outputs/coverage_qualification/coverage_qualification.json
+    allowed_wording: "coverage-conditioned AI-TOD endpoint"
+    forbidden_wording: ["full AI-TOD benchmark result", "AI-TOD rank stability"]

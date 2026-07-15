@@ -8,10 +8,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42})
+
 
 ROOT = Path(__file__).resolve().parents[1]
 POINTS = ROOT / "outputs" / "metric_qualified_rank" / "metric_rank_points.csv"
-BOOT = ROOT / "outputs" / "metric_qualified_rank" / "paired_bootstrap.csv"
+FACTORIAL = ROOT / "outputs" / "metric_factorial_control" / "factorial_pairwise_bootstrap.csv"
 OUT = ROOT / "figures" / "fig_metric_cluster_qualified_rank.pdf"
 ORDER = ["B-640", "B-1280", "Y11m", "ASD", "Y11n-P2"]
 COLORS = {"B-640": "#0072B2", "B-1280": "#56B4E9", "Y11m": "#009E73", "ASD": "#D55E00", "Y11n-P2": "#CC79A7"}
@@ -20,8 +22,7 @@ MARKERS = {"B-640": "o", "B-1280": "s", "Y11m": "D", "ASD": "^", "Y11n-P2": "v"}
 
 def main() -> None:
     points = pd.read_csv(POINTS)
-    boot = pd.read_csv(BOOT)
-    boot = boot[boot.resampling_unit.eq("sequence")].copy()
+    factorial = pd.read_csv(FACTORIAL)
     fig, (ax_rank, ax_ci) = plt.subplots(1, 2, figsize=(7.16, 3.05), gridspec_kw={"width_ratios": [1.22, 1], "wspace": .36})
 
     columns = [
@@ -55,28 +56,31 @@ def main() -> None:
                bbox_to_anchor=(.09, .985), handlelength=1.2, columnspacing=.8)
 
     order = [
-        ("absolute", "F1@.25", "24 px / F1@.25"),
-        ("absolute", "max-F1", "24 px / max-F1"),
-        ("absolute", "AP50", "24 px / AP50"),
-        ("normalized", "F1@.25", ".015 / F1@.25"),
-        ("normalized", "max-F1", ".015 / max-F1"),
-        ("normalized", "AP50", ".015 / AP50"),
+        ("absolute", .25, "max-F1", "24 / max-F1$_{25}$"),
+        ("absolute", .25, "AP", "24 / AP25"),
+        ("absolute", .50, "max-F1", "24 / max-F1$_{50}$"),
+        ("absolute", .50, "AP", "24 / AP50"),
+        ("normalized", .25, "max-F1", ".015 / max-F1$_{25}$"),
+        ("normalized", .25, "AP", ".015 / AP25"),
+        ("normalized", .50, "max-F1", ".015 / max-F1$_{50}$"),
+        ("normalized", .50, "AP", ".015 / AP50"),
     ]
     y = np.arange(len(order))[::-1]
-    for yi, (mode, metric, _) in zip(y, order):
-        row = boot[(boot["mode"] == mode) & (boot.metric == metric)].iloc[0]
+    for yi, (mode, iou, metric, _) in zip(y, order):
+        row = factorial[
+            factorial["mode"].eq(mode) & np.isclose(factorial.iou, iou) & factorial.metric.eq(metric)
+        ].iloc[0]
         color = "#009E73" if row.ci95_low > 0 else ("#D55E00" if row.ci95_high < 0 else ".40")
         ax_ci.errorbar(row.point_difference, yi,
                        xerr=[[row.point_difference - row.ci95_low], [row.ci95_high - row.point_difference]],
                        fmt="o", ms=3.2, color=color, ecolor=color, elinewidth=1.0, capsize=2.0)
-        ax_ci.text(row.ci95_high + .0012, yi, f"{row.point_difference:+.3f}", va="center", ha="left", fontsize=5.4, color=color)
     ax_ci.axvline(0, color=".18", lw=.75, ls="--")
-    ax_ci.set_yticks(y, [value[2] for value in order])
+    ax_ci.axhline(3.5, color=".55", lw=.55, ls=":")
+    ax_ci.set_yticks(y, [value[3] for value in order])
     ax_ci.set_xlabel("Y11m $-$ ASD")
-    ax_ci.set_title("(b) Sequence-cluster 95% intervals", fontsize=7.7, loc="left", pad=3)
+    ax_ci.set_xlim(-.021, .023)
+    ax_ci.set_title(r"(b) Localization $\times$ metric control", fontsize=7.7, loc="left", pad=3)
     ax_ci.grid(axis="x", color=".89", lw=.45)
-    ax_ci.text(.02, .985, "76 clusters; 10,000 paired resamples", transform=ax_ci.transAxes,
-               ha="left", va="top", fontsize=5.5, color=".25")
     for ax in (ax_rank, ax_ci):
         ax.tick_params(labelsize=5.9, length=2.0, pad=1.5)
         for spine in ax.spines.values(): spine.set_linewidth(.55)

@@ -121,30 +121,37 @@ Normalized & .0050 & 100.0 & 100.0 & 99.9\\
 \end{table}
 
 \section{Paired Rank Records and Evaluator Controls}
-Table~\ref{tab:rank} gives both resampling units for the registered Y11m--ASD pair. Sequence clusters are the leading seven-digit VisDrone filename tokens (76 clusters). Every cluster replicate includes all images in a sampled sequence and uses the same multiplicities for both configurations. Global counts and pooled-detection AP are recomputed for each replicate; AP is never averaged across images or sequences.
+Table~\ref{tab:rank} gives the localization-by-metric control for the Y11m--ASD pair. Sequence clusters are the leading seven-digit VisDrone filename tokens (76 clusters). Every replicate includes all images in each sampled sequence, applies identical multiplicities to both configurations, and recomputes global counts or pooled-detection AP. AP is never averaged across images or sequences.
 
 \begin{table}[!t]
 \centering
-\caption{Y11m--ASD paired differences under terminal contract $S$ (10,000 replicates). A = 24 px; N = .015.}\label{tab:rank}
+\caption{Y11m--ASD sequence-paired differences under terminal contract $S$ (10,000 replicates). A = 24 px; N = .015. IoU is the valid-GT match threshold; neutralization remains at intersection-over-prediction .5.}\label{tab:rank}
 \tiny
-\setlength{\tabcolsep}{1.2pt}\renewcommand{\arraystretch}{1.03}
-\begin{tabular}{llrrrrr}
+\setlength{\tabcolsep}{1.15pt}\renewcommand{\arraystretch}{.91}
+\begin{tabular}{llrrrr}
 \toprule
-Rule & Metric & Y11m & ASD & Diff. & Seq. 95\% & Image 95\%\\
+Rule & IoU/metric & Y11m & ASD & Diff. & Seq. 95\%\\
 \midrule
-A & $F_1@.25$ & .8927 & .8697 & $+.0229$ & [.0185,.0275] & [.0186,.0274]\\
-A & max-$F_1$ & .8979 & .8816 & $+.0163$ & [.0119,.0213] & [.0122,.0204]\\
-A & AP50 & .9231 & .9217 & $+.0013$ & [$-.0033$,.0052] & [$-.0035$,.0044]\\
-N & $F_1@.25$ & .8831 & .8673 & $+.0158$ & [.0118,.0201] & [.0117,.0199]\\
-N & max-$F_1$ & .8831 & .8732 & $+.0099$ & [.0060,.0140] & [.0060,.0136]\\
-N & AP50 & .8986 & .9096 & $-.0110$ & [$-.0181$,$-.0057$] & [$-.0167$,$-.0078$]\\
+A & .25/$F_1(c=.25)$ & .8927 & .8697 & $+.0229$ & [.0185,.0275]\\
+  & .25/max-$F_1$ & .8979 & .8816 & $+.0163$ & [.0119,.0213]\\
+  & .25/AP & .9453 & .9372 & $+.0081$ & [.0051,.0120]\\
+  & .50/$F_1(c=.25)$ & .8799 & .8577 & $+.0222$ & [.0180,.0269]\\
+  & .50/max-$F_1$ & .8886 & .8745 & $+.0141$ & [.0099,.0191]\\
+  & .50/AP & .9231 & .9217 & $+.0013$ & [$-.0033$,.0052]\\
+\midrule
+N & .25/$F_1(c=.25)$ & .8831 & .8673 & $+.0158$ & [.0118,.0201]\\
+  & .25/max-$F_1$ & .8831 & .8732 & $+.0099$ & [.0060,.0140]\\
+  & .25/AP & .9310 & .9315 & $-.0005$ & [$-.0030$,.0047]\\
+  & .50/$F_1(c=.25)$ & .8664 & .8524 & $+.0141$ & [.0104,.0181]\\
+  & .50/max-$F_1$ & .8692 & .8639 & $+.0054$ & [.0013,.0103]\\
+  & .50/AP & .8986 & .9096 & $-.0110$ & [$-.0181$,$-.0057$]\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The image and sequence intervals lead to the same qualification, but the sequence interval is the main inferential record. Fixed- and optimized-confidence $F_1$ favor Y11m at both rules. AP50 is unresolved at 24 pixels and favors ASD at .015. These outcomes preclude a metric-independent winner claim rather than being reconciled by selective reporting.
+Fixed- and optimized-confidence $F_1$ favor Y11m at both localization thresholds. At IoU .25, AP favors Y11m for A and is unresolved for N; at IoU .50, AP is unresolved for A and favors ASD for N. A sequence-resolved ASD-favoring normalized conclusion therefore occurs only in the cell combining stricter localization with score integration. Image-paired controls preserve these endpoint directions and remain in the released records.
 
-The registered AP cap is 2,000 detections per image. The observed maximum is 1,881, so no image in the five-configuration pool is truncated; caps of 100 and 300 truncate many dense-image outputs and are not used for headline AP. An independent score-ordered AP implementation and COCOeval agree exactly at both Y11m/ASD headline rules (maximum observed absolute difference $<10^{-12}$). A separate threshold-first Hungarian control on the released legacy-cache subset selects the same top configuration as greedy matching in 24/24 multi-candidate settings; the maximum absolute $F_1$ difference is .00546. These checks validate aligned evaluator components without expanding the scientific claim.
+The AP cap is 2,000 detections per image. The observed maximum is 1,881, so no pool image is truncated; caps of 100 and 300 alter dense-image inputs. The independent AP implementation and COCOeval agree exactly for AP50 (maximum absolute difference $<10^{-12}$). AP25 keeps the $S$-contract neutralization threshold fixed at .5, whereas COCOeval couples crowd matching to the evaluated IoU; COCOeval equivalence is therefore not asserted for that deliberately controlled cell. A threshold-first Hungarian replay selects the same top configuration as greedy matching in 24/24 settings; the maximum absolute $F_1$ difference is .00546.
 
 The full 14-support-by-eight-confidence rank surface remains exploratory because its small-gap cells were identified after inspecting the registered grid. No pointwise interval from a selected boundary cell is used as confirmatory evidence. Machine-readable full surfaces, matching controls, maxDets diagnostics, and DOTA-v2 structural support distances remain in the fixed repository release.
 
@@ -185,7 +192,8 @@ Coverage gate & \texttt{outputs/coverage\_qualification/} and \texttt{evaluate\_
 Support denominator & \texttt{outputs/scale/box\_scale\_records.parquet} and raw-coverage manifests\\
 Contract path & \texttt{outputs/contract\_path/}, \texttt{contract\_path.py}, and \texttt{evaluate\_contract\_path\_headlines.py}\\
 Metric-qualified rank & \texttt{outputs/metric\_qualified\_rank/} and \texttt{evaluate\_metric\_qualified\_visdrone\_rank.py}\\
-Figures and tests & Three \texttt{build\_*.py} scripts; contract, support, matching, and AP regression tests\\
+Metric-factorial control & \texttt{outputs/metric\_factorial\_control/} and \texttt{evaluate\_metric\_factorial\_control.py}\\
+Figures and tests & Four \texttt{build\_*.py} scripts; contract, support, matching, and AP regression tests\\
 Repository & \url{https://github.com/Marchematics/aerial-evaluation-audit}\\
 \bottomrule
 \end{tabular}

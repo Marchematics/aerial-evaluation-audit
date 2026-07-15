@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42})
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ENDPOINTS = ROOT / "outputs" / "contract_path" / "contract_endpoints.csv"

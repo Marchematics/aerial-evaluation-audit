@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import wasserstein_distance
 
+plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42})
+
 
 ROOT = Path(__file__).resolve().parents[1]
 FEATURES = ROOT / "outputs" / "coverage_qualification" / "aitod_image_features.parquet"

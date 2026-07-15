@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import numpy as np
 import pandas as pd
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -59,3 +60,27 @@ def test_metric_rank_bootstrap_and_ap_crosscheck_are_registered():
     cross=pd.read_csv(ROOT/'outputs/metric_qualified_rank/evaluator_crosscheck.csv')
     assert cross['pass'].all()
     assert cross.absolute_difference.max() < 1e-12
+
+def test_metric_factorial_control_is_complete_and_closes_existing_endpoints():
+    root=ROOT/'outputs/metric_factorial_control'
+    points=pd.read_csv(root/'factorial_points.csv')
+    pair=pd.read_csv(root/'factorial_pairwise_bootstrap.csv')
+    cross=pd.read_csv(root/'factorial_ap_crosscheck.csv')
+    assert set(points.iou)=={.25,.50}
+    assert set(points.short_candidate)=={'Y11m','ASD'}
+    assert len(points)==8
+    assert set(pair.metric)=={'F1@conf=.25','max-F1','AP'}
+    assert len(pair)==12 and set(pair.replicates)=={10000}
+    assert set(pair.sampling_units)=={76}
+    assert cross['pass'].all() and set(cross.iou)=={.50}
+    existing=pd.read_csv(ROOT/'outputs/metric_qualified_rank/metric_rank_points.csv')
+    for row in points.itertuples():
+        old=existing[
+            existing.candidate.eq(row.candidate) & existing['mode'].eq(row.mode) &
+            np.isclose(existing.threshold,row.threshold)
+        ].iloc[0]
+        if np.isclose(row.iou,.25):
+            assert np.isclose(row.f1_at_025,old.f1_at_025)
+            assert np.isclose(row.max_f1,old.max_f1)
+        else:
+            assert np.isclose(row.ap,old.ap50)

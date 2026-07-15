@@ -5,10 +5,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import matplotlib.patheffects as pe
 from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
+
+plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42})
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,24 +59,6 @@ def main() -> None:
             curve = retained(values, thresholds)
             ax.plot(thresholds, curve, marker="o", ms=2.8, lw=1.05, ls=STYLE[source], color=COLOR[source])
         ax.axvline(headline, color=".25", lw=.75, ls=":")
-        headline_values = {
-            source: retained(scale.loc[scale.source.eq(source), field].to_numpy(float), thresholds)[
-                int(np.where(np.isclose(thresholds, headline))[0][0])
-            ] for source in SOURCES
-        }
-        # Attach headline values to the corresponding points instead of using
-        # a detached text block that can be mistaken for an unlabeled inset.
-        offsets = {
-            "absolute": {"visdrone": (5, -7), "uavdt": (5, 2), "aitod": (5, 3)},
-            "normalized": {"visdrone": (5, 0), "uavdt": (5, 2), "aitod": (5, -7)},
-        }
-        for source in SOURCES:
-            value = headline_values[source]
-            ax.scatter([headline], [value], s=15, color=COLOR[source], edgecolor="white", lw=.45, zorder=4)
-            dx, dy = offsets[mode][source]
-            note = ax.annotate(f"{value:.1f}%", (headline, value), xytext=(dx, dy), textcoords="offset points",
-                               ha="left", va="center", fontsize=5.7, color=COLOR[source], fontweight="bold")
-            note.set_path_effects([pe.withStroke(linewidth=1.4, foreground="white"), pe.Normal()])
         ax.set_ylim(-2, 104); ax.set_ylabel("Retained valid GT (%)")
         ax.set_xlabel("Threshold (px)" if mode == "absolute" else "Normalized threshold")
         ax.set_title(title, fontsize=7.8, loc="left", pad=3)

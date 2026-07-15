@@ -1,0 +1,48 @@
+{
+  "purpose": "separate localization threshold from score integration",
+  "contract": "S",
+  "candidates": [
+    "visdrone_control_yolo11m_hf640",
+    "visdrone_control_asd1280"
+  ],
+  "common_images": 548,
+  "sequence_clusters": 76,
+  "sequence_definition": "leading seven-digit VisDrone filename token",
+  "rules": [
+    {
+      "mode": "absolute",
+      "threshold": 24.0
+    },
+    {
+      "mode": "normalized",
+      "threshold": 0.015
+    }
+  ],
+  "ious": [
+    0.25,
+    0.5
+  ],
+  "confidence_grid": [
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.5
+  ],
+  "operating_confidence": 0.25,
+  "metrics": [
+    "F1@conf=.25",
+    "max-F1",
+    "AP"
+  ],
+  "ap_max_dets": 2000,
+  "replicates": 10000,
+  "seed": 20260715,
+  "ap_bootstrap": "pooled detections recomputed for every paired sequence resample",
+  "cocoeval_contract_aligned_iou": 0.5,
+  "ap25_cocoeval_note": "diagnostic only: COCOeval couples crowd neutralization to evaluated IoU, whereas contract S fixes neutralization at IoP=.5",
+  "crosscheck_max_abs_difference": 0.0
+}
