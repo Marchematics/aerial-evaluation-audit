@@ -6,6 +6,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
 import numpy as np
 import pandas as pd
 
@@ -50,27 +51,40 @@ def main() -> None:
         (axs[1], "max_side_px", ABS, 24., "(b)", "Absolute support threshold (px)"),
         (axs[2], "normalized_side", NORM, .015, "(c)", "Normalized support threshold"),
     ]:
+        retained_at_headline = {}
         for source in SOURCES:
             values = records.loc[records.source.eq(source), measure].to_numpy(float)
             retained = 100 * np.array([(values >= t).mean() for t in thresholds])
             ax.plot(thresholds, retained, color=COLORS[source], ls=STYLES[source], marker="o", ms=2.6,
                     lw=1.25, label=LABEL[source])
-            keep = 100 * (values >= headline).mean()
-            # Carefully positioned direct labels avoid a large external legend.
-            x = thresholds[-1] if source == "uavdt" and measure == "max_side_px" else headline
-            yoff = {"visdrone": 3.5, "uavdt": 4.5, "aitod": -7.0}[source]
-            if measure == "normalized_side":
-                x = {"visdrone": .017, "uavdt": .017, "aitod": .017}[source]
-                yoff = {"visdrone": -8.5, "uavdt": 2.5, "aitod": -4.5}[source]
-            ax.annotate(f"{keep:.1f}%", xy=(headline, keep), xytext=(3, yoff), textcoords="offset points",
-                        fontsize=6.5, color=COLORS[source], ha="left")
-        ax.axvline(headline, color=".15", lw=.75, ls=":")
+            retained_at_headline[source] = 100 * (values >= headline).mean()
+        ax.axvline(headline, color=".15", lw=.75, ls=":", zorder=.5)
         ax.set(xlabel=xlabel, ylabel="Retained GT (%)", ylim=(-3, 103))
         ax.tick_params(labelsize=7)
         ax.grid(alpha=.25, lw=.45)
         ax.text(-.15, 1.03, panel, transform=ax.transAxes, fontweight="bold", fontsize=8)
+        # A compact numerical key replaces point-level annotations.  The old
+        # labels sat directly on the headline curves and obscured both values
+        # and the threshold line, especially around normalized .015.
+        if measure == "max_side_px":
+            box = (.54, .675, .445, .315)
+            tx, head_y, ys, ha = .965, .955, (.875, .795, .715), "right"
+        else:
+            # The normalized curves occupy the upper-left and lower-right;
+            # the lower-left is the only data-free region at this scale.
+            box = (.025, .035, .50, .315)
+            tx, head_y, ys, ha = .05, .315, (.235, .155, .075), "left"
+        ax.add_patch(Rectangle(box[:2], box[2], box[3], transform=ax.transAxes,
+                               fc="white", ec=".78", lw=.45, alpha=.93, zorder=4))
+        head = "At 24 px" if measure == "max_side_px" else "At .015"
+        ax.text(tx, head_y, head, transform=ax.transAxes, ha=ha, va="top",
+                fontsize=6.35, fontweight="bold", color=".15", zorder=5)
+        for yy, source in zip(ys, SOURCES):
+            ax.text(tx, yy, f"{LABEL[source]}  {retained_at_headline[source]:.1f}%",
+                    transform=ax.transAxes, ha=ha, va="top", fontsize=6.05,
+                    color=COLORS[source], zorder=5)
     axs[1].set_xticks(ABS)
-    axs[1].tick_params(axis="x", labelrotation=35)
+    axs[1].set_xticklabels([str(int(v)) for v in ABS], rotation=40, ha="right")
     axs[2].set_xticks(NORM)
     axs[2].set_xticklabels([".005", ".0075", ".01", ".015", ".02", ".03"], rotation=35, ha="right")
     handles = [Line2D([0], [0], color=COLORS[s], ls=STYLES[s], marker="o", ms=3, lw=1.2, label=LABEL[s]) for s in SOURCES]

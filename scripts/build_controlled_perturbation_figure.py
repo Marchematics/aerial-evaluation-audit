@@ -63,51 +63,56 @@ def headline_values(frame: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def rect(ax, x, y, w, h, color, label, *, dashed=False, label_y=None):
-    ax.add_patch(Rectangle((x, y), w, h, fc=color, ec=color, alpha=.18, lw=1.05,
-                           ls="--" if dashed else "-"))
-    if label:
-        ax.text(x + w / 2, y + h / 2 if label_y is None else label_y, label, ha="center", va="center", fontsize=6.05)
-
-
 def contract_panel(ax) -> None:
-    valid, removed, ignore, pred = "#0072B2", "#E69F00", "#777777", "#D55E00"
+    """Show the categorical evaluator contract without spatial arrows."""
     ax.set(xlim=(0, 30), ylim=(0, 6.05))
     ax.axis("off")
     ax.text(0, 5.92, "(a)", fontsize=8.2, fontweight="bold", va="top")
-    ax.text(1.15, 5.92, "Target and ignore contract", fontsize=7.55, va="top")
-    for x in (10, 20):
-        ax.plot([x, x], [.45, 4.70], color=".84", lw=.65)
+    ax.text(1.18, 5.92, "Target and ignore contract", fontsize=7.55, va="top")
 
-    # I: full target.
-    ax.text(5, 4.72, "I: include all", ha="center", fontsize=6.85, fontweight="bold", color=COLORS["include_all"])
-    rect(ax, 1.20, 2.05, 2.4, 1.55, valid, "valid GT")
-    rect(ax, 5.20, 2.05, 2.4, 1.55, removed, "small valid GT")
-    ax.annotate("both scored", xy=(8.65, 2.85), xytext=(7.70, 4.05), fontsize=6.0, ha="center",
-                arrowprops=dict(arrowstyle="->", lw=.65, color=".25"))
-    ax.text(5, .82, "Full target", ha="center", fontsize=6.15)
+    # The three policies differ categorically, not geometrically.  A compact
+    # comparison table therefore states each changed evaluator component
+    # directly and avoids arrows that could be mistaken for matching steps.
+    left, col_w = 4.65, 8.30
+    col_x = [left + i * col_w for i in range(3)]
+    centers = [x + col_w / 2 for x in col_x]
+    row_y = [3.30, 2.05, .80]
+    row_h = 1.05
+    headers = [
+        ("I: include all", COLORS["include_all"]),
+        ("O: exclude / ignore off", COLORS["exclude_source_ignore_off"]),
+        ("N: exclude / ignore on", COLORS["exclude_source_ignore_on"]),
+    ]
+    for x, center, (title, color) in zip(col_x, centers, headers):
+        ax.add_patch(Rectangle((x + .08, .68), col_w - .16, 4.47,
+                               facecolor=color, edgecolor=color, alpha=.055, lw=.75))
+        ax.text(center, 4.86, title, ha="center", va="center", fontsize=6.55,
+                fontweight="bold", color=color)
 
-    # O: filtered target without source-ignore protection.
-    ax.text(15, 4.72, "O: exclude / ignore off", ha="center", fontsize=6.85, fontweight="bold", color=COLORS["exclude_source_ignore_off"])
-    rect(ax, 11.05, 2.05, 2.4, 1.55, valid, "retained GT")
-    rect(ax, 14.60, 2.05, 2.4, 1.55, removed, "", dashed=True)
-    rect(ax, 15.05, 2.38, 2.4, 1.55, pred, "")
-    ax.text(15.80, 1.74, "removed GT", ha="center", fontsize=5.55, color=removed)
-    ax.text(16.24, 4.18, "prediction", ha="center", fontsize=5.55, color=pred)
-    ax.annotate("FP", xy=(17.82, 3.15), xytext=(18.75, 3.15), fontsize=7.4, color="#B2182B", fontweight="bold",
-                arrowprops=dict(arrowstyle="->", lw=.65, color=".25"))
-    ax.text(15, .82, "Filtered target; source ignores disabled", ha="center", fontsize=6.15)
+    row_labels = ["Scored valid GT", "Source-ignore regions", "Below-threshold valid GT"]
+    for y, label in zip(row_y, row_labels):
+        ax.text(left - .28, y + row_h / 2, label, ha="right", va="center",
+                fontsize=6.05, color=".20", fontweight="bold")
+        ax.plot([left, 29.55], [y, y], color=".83", lw=.55)
 
-    # N: same filtered target, valid GT first then source ignore.
-    ax.text(25, 4.72, "N: exclude / ignore on", ha="center", fontsize=6.85, fontweight="bold", color=COLORS["exclude_source_ignore_on"])
-    rect(ax, 21.10, 2.05, 2.2, 1.55, valid, "retained GT")
-    rect(ax, 24.20, 2.05, 2.2, 1.55, ignore, "", dashed=True)
-    rect(ax, 25.20, 2.38, 2.2, 1.55, pred, "")
-    ax.text(25.30, 1.74, "source ignore", ha="center", fontsize=5.45, color=ignore)
-    ax.text(26.30, 4.18, "prediction", ha="center", fontsize=5.55, color=pred)
-    ax.text(29.20, 2.02, "unmatched $\\Rightarrow$\nneutralized", fontsize=5.30, ha="right", va="center", color=ignore)
-    ax.text(25, .82, "Filtered target; valid GT matched first", ha="center", fontsize=6.15)
-    ax.text(15, .20, "In I/O/N, a removed valid box is never converted to an ignore region.", ha="center", fontsize=5.85, color=".20")
+    cells = [
+        ["all mapped boxes\n(small boxes retained)", "above-threshold\nboxes only", "above-threshold\nboxes only"],
+        ["enabled", "disabled", "enabled after\nvalid-GT matching"],
+        ["not removed", "dropped; not ignore", "dropped; not ignore"],
+    ]
+    for y, row in zip(row_y, cells):
+        for center, text in zip(centers, row):
+            ax.text(center, y + row_h / 2, text, ha="center", va="center",
+                    fontsize=5.95, color=".12", linespacing=1.12)
+
+    for x in [left, left + col_w, left + 2 * col_w, left + 3 * col_w]:
+        ax.plot([x, x], [.68, 5.15], color=".80", lw=.55)
+    ax.plot([left, 29.55], [5.15, 5.15], color=".70", lw=.65)
+    ax.plot([left, 29.55], [4.48, 4.48], color=".78", lw=.55)
+    ax.plot([left, 29.55], [.68, .68], color=".70", lw=.65)
+    ax.text(17.10, .18,
+            "Under O/N, predictions on removed valid boxes remain FP-eligible; removed boxes never become ignore regions.",
+            ha="center", va="center", fontsize=5.65, color=".22")
 
 
 def band_panel(ax, values: pd.DataFrame, mode: str, title: str, band_range: str) -> None:
@@ -121,7 +126,7 @@ def band_panel(ax, values: pd.DataFrame, mode: str, title: str, band_range: str)
                        zorder=3, edgecolor="white", linewidth=.35)
         ax.text(x, min(ys) - .011, f"{r.F1_policy_band:.3f}", ha="center", va="top", fontsize=5.7, color=".30")
     ax.set_xlim(-.55, len(sub) - .45)
-    ax.set_ylim(.68, .90)
+    ax.set_ylim(.67, .90)
     ax.set_xticks(xs, sub.candidate_short)
     ax.set_ylabel("Micro-$F_1$")
     ax.set_title(title, fontsize=8.0)
