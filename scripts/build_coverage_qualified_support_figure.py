@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
 from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
@@ -62,12 +63,19 @@ def main() -> None:
                 int(np.where(np.isclose(thresholds, headline))[0][0])
             ] for source in SOURCES
         }
-        block_y = [.91, .82, .73]
-        for yy, source in zip(block_y, SOURCES):
-            ax.text(.985, yy, f"{LABEL[source]} {headline_values[source]:.1f}%", transform=ax.transAxes,
-                    ha="right", va="top", fontsize=5.8, color=COLOR[source])
-        ax.text(.985, .995, "At 24 px" if mode == "absolute" else "At .015", transform=ax.transAxes,
-                ha="right", va="top", fontsize=5.8, color=".15", fontweight="bold")
+        # Attach headline values to the corresponding points instead of using
+        # a detached text block that can be mistaken for an unlabeled inset.
+        offsets = {
+            "absolute": {"visdrone": (5, -7), "uavdt": (5, 2), "aitod": (5, 3)},
+            "normalized": {"visdrone": (5, 0), "uavdt": (5, 2), "aitod": (5, -7)},
+        }
+        for source in SOURCES:
+            value = headline_values[source]
+            ax.scatter([headline], [value], s=15, color=COLOR[source], edgecolor="white", lw=.45, zorder=4)
+            dx, dy = offsets[mode][source]
+            note = ax.annotate(f"{value:.1f}%", (headline, value), xytext=(dx, dy), textcoords="offset points",
+                               ha="left", va="center", fontsize=5.7, color=COLOR[source], fontweight="bold")
+            note.set_path_effects([pe.withStroke(linewidth=1.4, foreground="white"), pe.Normal()])
         ax.set_ylim(-2, 104); ax.set_ylabel("Retained valid GT (%)")
         ax.set_xlabel("Threshold (px)" if mode == "absolute" else "Normalized threshold")
         ax.set_title(title, fontsize=7.8, loc="left", pad=3)
@@ -96,8 +104,6 @@ def main() -> None:
     ax.set_title("(c) AI-TOD conditioning", fontsize=7.8, loc="left", pad=3)
     ax.grid(axis="y", color=".89", lw=.45)
     ax.legend(frameon=False, fontsize=5.8, loc="upper left", handlelength=1.2)
-    ax.text(.5, .54, "66.7% images\n28.2% boxes", transform=ax.transAxes, ha="center", va="center", fontsize=6.3,
-            bbox={"boxstyle": "round,pad=.22", "fc": "white", "ec": ".75", "lw": .45})
 
     legend = [Line2D([0], [0], color=COLOR[source], ls=STYLE[source], marker="o", ms=2.8, lw=1.05, label=LABEL[source]) for source in SOURCES]
     fig.legend(handles=legend, loc="upper center", ncol=3, frameon=False, fontsize=6.2, bbox_to_anchor=(.68, 1.01),
