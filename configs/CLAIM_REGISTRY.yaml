@@ -1,0 +1,32 @@
+version: 1
+claims:
+  - claim_id: C01
+    claim: "The available aerial data artifacts differ in vehicle-class support and box-size distributions."
+    status: observed
+    evidence: [outputs/label_reliability/m25_scale_support/vehicle_scale_records.csv, outputs/label_reliability/m27_visdrone_aitod_bridge/provenance_summary.json]
+    allowed_wording: "observed structural difference among the declared artifacts"
+    forbidden_wording: ["which dataset is more correct", "universal benchmark property"]
+  - claim_id: C02
+    claim: "Absolute and normalized scale rules can produce different reported support."
+    status: deterministic
+    evidence: [outputs/label_reliability/m25_scale_support/scale_threshold_bootstrap.csv]
+    allowed_wording: "evaluation-rule sensitivity"
+    forbidden_wording: ["physical scale mismatch", "annotation error"]
+  - claim_id: C03
+    claim: "Evaluation rules can change candidate-pool configuration rankings."
+    status: pending
+    evidence: [outputs/label_reliability/m14_detector_rule_consequence/detector_rule_rank_changes.csv]
+    allowed_wording: "candidate-pool ranking under the declared rules"
+    forbidden_wording: ["detector-wide leaderboard", "causal policy effect"]
+  - claim_id: C04
+    claim: "Frame-level vehicle-count and activity-tier products are sensitive to evaluation rules."
+    status: pending
+    evidence: [outputs/rule_grid/count_metrics.csv, outputs/rule_grid/traffic_activity_metrics.csv]
+    allowed_wording: "frame-level vehicle-count product"
+    forbidden_wording: ["physical traffic density", "ground-truth traffic state"]
+  - claim_id: C05
+    claim: "The UAVDT test split is represented in COCO format for the common evaluator, with raw-to-conversion lineage checked."
+    status: observed
+    evidence: [outputs/label_reliability/m24_uavdt_conversion_lineage/UAVDT_CONVERSION_LINEAGE.md, DATA_PROVENANCE.md]
+    allowed_wording: "UAVDT test split represented in COCO format"
+    forbidden_wording: ["locally created UAVDT benchmark", "synthetic UAVDT ground truth"]

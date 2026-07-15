@@ -1,211 +1,140 @@
 \documentclass[journal]{IEEEtran}
-\usepackage{amsmath,booktabs,graphicx,microtype,balance}
+\usepackage{amsmath,amssymb,booktabs,graphicx,microtype,balance}
 \usepackage[hidelinks]{hyperref}
 \makeatletter
-\setlength{\@fptop}{0pt}\setlength{\@fpsep}{7pt}\setlength{\@fpbot}{0pt plus 1fil}
-\setlength{\@dblfptop}{0pt}\setlength{\@dblfpsep}{7pt}\setlength{\@dblfpbot}{0pt plus 1fil}
+\setlength{\@fptop}{0pt}\setlength{\@fpsep}{6pt}\setlength{\@fpbot}{0pt plus 1fil}
+\setlength{\@dblfptop}{0pt}\setlength{\@dblfpsep}{6pt}\setlength{\@dblfpbot}{0pt plus 1fil}
 \makeatother
 \emergencystretch=2em\sloppy
-\title{Support-Conditioned Evaluation Auditing for Aerial Vehicle Detection}
+\title{Coverage-Qualified Evaluation-Contract Auditing for Aerial Vehicle Detection}
 \author{Xinling Wen, Jiahao Zhang, Wenqi Liu, Yangxu Ren, and Yu Chen%
 \thanks{This work was supported by Henan provincial research, innovation, education-reform, talent, and collaborative-innovation programs (Grant Nos. 241111213000, 26IRTSTHN036, YJS2024JD48, 2025SJGLX086Y, and 254000510003).}%
 \thanks{All authors are with the School of Electronics and Information, Zhengzhou University of Aeronautics, Zhengzhou 450046, China. Xinling Wen and Yu Chen are also with the Henan Key Laboratory of General Aviation Technology and the Collaborative Innovation Center of Aeronautics and Astronautics Electronic Information Technology, Henan Province, Zhengzhou 450046, China.}%
 \thanks{Corresponding authors: Jiahao Zhang (marchematics@gmail.com) and Yu Chen (chatu@zua.edu.cn).}}
 \begin{document}\maketitle
 \begin{abstract}
-Aerial-detection scores can change because a small-object rule changes the annotation support being scored. We formulate support-conditioned evaluation as one chain: annotation-support mismatch, controlled support perturbation, metric uncertainty, and rank robustness on common coverage. The support layer reports retained valid ground truth under absolute and normalized rules. The perturbation layer separates target-set removal from source-ignore treatment and reports a policy band. The rank layer compares frozen configuration pools only on their shared image set and pairs margins with image-paired bootstrap intervals. At 24 pixels, retained vehicle support is 73.3\%, 95.1\%, and 9.7\% for VisDrone, UAVDT, and AI-TOD; at normalized .015 it is 89.8\%, 97.4\%, and 81.0\%. For one registered baseline artifact per source, the corresponding $F_1$ policy bands are .036/.025, .009/.002, and .330/.136; the AI-TOD values are conditioned on its 1,869 covered images. In a five-configuration, 548-image VisDrone pool, headline Y11m--ASD margins are .0449 [.0391, .0506] and .0277 [.0234, .0321], whereas observed rank-boundary intervals span zero. The audit distinguishes a changed target, a policy-sensitive metric, and an uncertainty-qualified within-pool comparison.
+Aerial-detection scores can move because a support rule changes both the target and the treatment of detections near excluded objects. We introduce a coverage-qualified evaluation-contract audit comprising a coverage gate followed by support measurement, an ordered contract path, and common-coverage rank inference. The registered path $A\!\rightarrow\!F\!\rightarrow\!R\!\rightarrow\!S$ changes one evaluator factor at a time and attaches an exact TP/FP/FN ledger to target filtering, removed-object neutralization, and source-ignore handling. At 24 pixels, VisDrone, UAVDT, and AI-TOD retain 73.3\%, 95.1\%, and 9.7\% of valid vehicle boxes. On fixed baseline predictions, their $A\!\rightarrow\!F$ micro-$F_1$ changes are $-.036$, $-.009$, and $-.330$; removed-object neutralization then recovers $.067$, $.004$, and $.080$. AI-TOD covers 66.7\% of images but only 28.2\% of boxes, so its metric replay is explicitly conditional. On 548 common VisDrone images, sequence-paired intervals favor Y11m over ASD for $F_1$ at confidence .25 and for max-$F_1$, but AP50 is unresolved at 24 pixels and favors ASD at normalized .015. The result is a qualified comparison rather than a detector-wide winner claim. An independent AP implementation matches COCOeval at all four checked endpoints.
 \end{abstract}
-\begin{IEEEkeywords}Aerial detection, annotation support, evaluation sensitivity, rank robustness, vehicle detection.
+\begin{IEEEkeywords}Aerial detection, annotation support, evaluation contract, coverage qualification, cluster bootstrap.
 \end{IEEEkeywords}
 
 \section{Introduction}
-A reported detection score is meaningful only after its scored target is fixed. In aerial imagery, a support rule can change that target sharply: the same pixel cutoff may retain most vehicles in one source while removing most vehicles in another. Resolution, ontology, source-provided ignores, and tiny-object conventions therefore enter an evaluation result before one compares detector outputs. This issue is consequential for heterogeneous aerial benchmarks \cite{zhu2018vision,du2018unmanned,xu2022detecting,ding2021object} and complements research on dataset bias, label quality, and error diagnosis \cite{torralba2011unbiased,northcutt2021pervasive,bolya2020tide}.
+A detection score is interpretable only after its evaluation target and matching contract are fixed. This requirement is acute in aerial imagery: a common pixel cutoff can retain almost every vehicle in one source and remove most vehicles in another. Predictions near removed objects may then be counted as false positives or treated as neutral, while source-provided ignore regions add a separate decision. These choices enter the metric before detector outputs are compared.
 
-Recent GRSL studies illustrate both the importance of high-resolution remote-sensing processing and the sensitivity of validation to geolocation conditions \cite{zhu2025unetmamba,liu2025dem}. What remains underreported in cross-artifact detection comparisons is a connected account of \emph{what annotation support changed}, \emph{how the metric reacts to that change}, and \emph{whether the resulting model conclusion holds on a common denominator}. Reporting many evaluation switches without this ordering obscures the scientific question.
+Cross-dataset bias, heterogeneous label spaces, annotation reliability, and detector error taxonomies are well studied \cite{torralba2011unbiased,zhao2020object,northcutt2021pervasive,bolya2020tide}. Tiny-object procedures can also alter the prediction process itself \cite{akyon2022slicing}. Our question is different: after annotations and prediction caches are fixed, can the evaluator's effect be measured, attributed to explicit contract steps, and separated from sampling uncertainty? Recent GRSL work likewise shows that validation conditions can materially affect remote-sensing conclusions \cite{zhu2025unetmamba,liu2025dem}, but aerial-detection reports rarely connect coverage, support, contract semantics, and rank inference in one record.
 
-Several adjacent lines motivate this account. Unified label spaces address semantic compatibility across datasets \cite{zhao2020object}; slicing and other tiny-object procedures change the prediction process itself \cite{akyon2022slicing}; noise-aware evaluation and label-error screening study annotation reliability \cite{schubert2024identifying,murrugarra2025noise,zhu2024robust}; and error taxonomies localize detector failure modes \cite{bolya2020tide}. Our focus begins after an artifact and prediction cache are fixed: it records how an explicit change in scored support propagates into a metric and then into a within-pool decision.
+Three weaknesses make an unstructured sensitivity sweep hard to defend. First, incomplete prediction coverage can silently change the evaluated population. Second, endpoint ranges do not identify whether movement follows target filtering, the treatment of removed objects, or native ignore regions. Third, a fixed-confidence $F_1$ comparison can confound detector ranking with score calibration, while image-wise resampling can ignore sequence dependence. We address these weaknesses without training another detector.
 
-We introduce a support-conditioned audit with the following three layers.
-\begin{enumerate}
-\item \textit{Annotation-support mismatch:} report raw prediction coverage and retained valid ground truth under absolute and normalized support rules.
-\item \textit{Controlled support perturbation:} hold prediction artifacts fixed, vary the target/ignore contract explicitly, and summarize the resulting metric uncertainty by a policy band.
-\item \textit{Rank robustness on common coverage:} compare a frozen configuration pool only on shared images, map finite-grid winner regions, and pair a point margin with image-paired uncertainty.
-\end{enumerate}
-Together, the three layers turn a reported score into a traceable support-to-decision record.
+Our contributions are fourfold. 1) We define a coverage-qualification gate that separates full-dataset annotation support from prediction-covered metric inference. 2) We introduce an ordered evaluation-contract path with an exact count-transition ledger. 3) We replay the same path on VisDrone, UAVDT, and a coverage-conditioned AI-TOD artifact \cite{zhu2018vision,du2018unmanned,xu2022detecting}. 4) We qualify a frozen VisDrone pool with fixed-$F_1$, max-$F_1$, AP50, and sequence-paired cluster intervals. The audit is designed to reveal when a ranking is metric-specific, not to manufacture agreement among metrics.
 
-\section{Support-Conditioned Audit}
-\subsection{Artifacts, mapping, and coverage}
-We use VisDrone2019-DET validation, the UAVDT test split represented in COCO format for the common evaluator, and AI-TOD validation \cite{zhu2018vision,du2018unmanned,xu2022detecting}. The available AI-TOD crop reconstruction has xView-derived provenance \cite{lam2018xview}. Vehicles are mapped as VisDrone \{car, van, truck, bus\}, UAVDT \{car, truck, bus\}, and AI-TOD \{vehicle\}. Raw coverage is determined from image names in a prediction artifact \emph{before} class filtering; an executed image with no retained vehicle prediction is consequently evaluated as an empty prediction. Table~\ref{tab:support} gives the support denominator. DOTA-v2 quadrilateral-to-HBB scale evidence is retained as a structural supplementary check, not as a metric or rank result \cite{ding2021object}.
+\section{Coverage-Qualified Contract Audit}
+\subsection{Gate 0 and support coordinates}
+We use VisDrone2019-DET validation, the UAVDT test split represented in COCO format for a common evaluator, and AI-TOD validation. The available AI-TOD reconstruction includes xView-derived imagery \cite{lam2018xview}. Vehicle mappings are VisDrone \{car, van, truck, bus\}, UAVDT \{car, truck, bus\}, and AI-TOD \{vehicle\}. Raw coverage is established from prediction image names \emph{before} class filtering; a covered image with no retained vehicle prediction is an empty prediction, not a missing observation.
 
-\begin{table}[!t]
+Gate 0 records the annotation denominator, raw coverage, and covered--noncovered differences before any metric is interpreted. Complete artifacts can enter all later layers. An incomplete artifact may enter support diagnosis and a clearly conditioned metric replay, but not a full-benchmark rank claim. We compare AI-TOD coverage groups by boxes per image, support, aspect ratio, and normalized nearest-neighbor spacing; standardized mean differences and Wasserstein distances are released.
+
+Formally, let $\mathcal I_s$ be the registered annotation-image set for source $s$ and $\mathcal P_k$ the image identifiers present in candidate artifact $k$. Its raw coverage is
+\begin{equation}
+q_{sk}=\frac{|\mathcal I_s\cap\mathcal P_k|}{|\mathcal I_s|}.
+\end{equation}
+Annotation support is estimated on all of $\mathcal I_s$ and is independent of predictions. A metric endpoint for $k$ is a full-source estimand only when $q_{sk}=1$; otherwise it is written conditionally on $\mathcal J_{sk}=\mathcal I_s\cap\mathcal P_k$. A pairwise rank estimand uses the explicit common set $\mathcal J_{sk\ell}=\mathcal I_s\cap\mathcal P_k\cap\mathcal P_\ell$. This separation prevents a high-coverage artifact from silently redefining the benchmark denominator and prevents unmatched image sets from entering a detector comparison.
+
+For a box $(w,h)$ in image $(W,H)$, absolute and normalized max-side support are
+\begin{equation}
+s_a=\max(w,h),\qquad s_n=\max\left(\frac{w}{W},\frac{h}{H}\right).
+\end{equation}
+We register $s_a\in\{16,20,24,28,32,40,48,64\}$ pixels and $s_n\in\{.005,.0075,.010,.015,.020,.030\}$; 24 pixels and .015 are the headline interior values. Under uniform resizing by $\alpha>0$, $s_a'=\alpha s_a$ whereas $s_n'=s_n$. Thus normalized support is resize invariant and absolute support is scale covariant. This property does not imply semantic equivalence across sources; ontology, acquisition geometry, cropping, and density can still differ.
+
+\noindent\textit{Proposition 1 (scale behavior).} Under the uniform transformation $(w,h,W,H)\mapsto(\alpha w,\alpha h,\alpha W,\alpha H)$ with $\alpha>0$, normalized max-side support is invariant and absolute max-side support is covariant. This follows directly because $\max(\alpha w,\alpha h)=\alpha s_a$, whereas both factors of $\alpha$ cancel in $s_n$. The proposition motivates reporting both coordinates; it does not make a shared normalized threshold a claim of semantic equivalence.
+
+\begin{figure*}[!t]
 \centering
-\caption{Support denominator and retained vehicle ground truth. Coverage is raw-prediction image coverage. $\rho_{24}$ and $\rho_{.015}$ are retained fractions at the two headline rules.}\label{tab:support}
-\small
-\setlength{\tabcolsep}{3.1pt}
-\renewcommand{\arraystretch}{1.08}
-\begin{tabular}{lrrrr}
-\toprule
-Source & Coverage & Vehicle boxes & $\rho_{24}$ & $\rho_{.015}$\\
-\midrule
-VisDrone & 548/548 & 17,040 & 73.3\% & 89.8\%\\
-UAVDT & 305/305 & 11,054 & 95.1\% & 97.4\%\\
-AI-TOD & 1,869/2,804 & 59,904 & 9.7\% & 81.0\%\\
-\bottomrule
-\end{tabular}
-\end{table}
+\includegraphics[width=.98\textwidth]{../figures/fig_coverage_qualified_support.pdf}
+\caption{Coverage qualification precedes metric interpretation. (a) Raw prediction coverage. (b) Full-source absolute retained-support curves. (c) AI-TOD's covered images contain 28.2\% of its vehicle boxes; its full-source and covered-subset headline support therefore differ. (d) Full-source normalized retained-support curves. Percentages are pooled valid-GT fractions computed before prediction matching.}\label{fig:coverage}
+\end{figure*}
 
-The metric layer replays one registered baseline artifact per source. Its VisDrone and UAVDT records have complete image coverage; the AI-TOD record is explicitly conditioned on the 1,869 covered images. The rank layer is narrower: its primary VisDrone pool comprises five fixed configurations---two resolutions of one baseline checkpoint (B-640 and B-1280), independently trained Y11m and ASD configurations, and a fine-tuned Y11n-P2 configuration---each with 548/548 raw-image coverage. UAVDT remains an ancillary full-coverage ranking control; AI-TOD is excluded from rank claims.
-
-\subsection{Support and perturbation contract}
-For a ground-truth box $(w,h)$ in an image $(W,H)$, define absolute and normalized support as
-\begin{equation}
- s_a=\max(w,h), \qquad s_n=\max\left(\frac{w}{W},\frac{h}{H}\right).
-\end{equation}
-For source $s$ and rule $t$, $G_s(t)$ denotes valid mapped boxes retained by the rule, and $\rho_s(t)=|G_s(t)|/|G_s|$ is the retained-support fraction. We register $s_a\in\{16,20,24,28,32,40,48,64\}$ pixels and $s_n\in\{.005,.0075,.010,.015,.020,.030\}$; 24 pixels and .015 are the headline interior values.
-
-We define three primary policies. $I$ retains all mapped valid boxes. $O$ removes below-support valid boxes and disables source-ignore neutralization. $N$ uses the same filtered target as $O$, while enabling source ignores after valid-GT matching. Under $O$ and $N$, a prediction overlapping a removed valid box remains eligible as a false positive; the separate removed-as-ignore control is supplementary. For a fixed support rule and metric $m$, the fixed-rule policy band is
-\begin{equation}
- B_m^{\pi}(t)=\max_{\pi\in\{I,O,N\}}m(t,\pi)-\min_{\pi\in\{I,O,N\}}m(t,\pi).
-\end{equation}
-We use global micro-$F_1$ at confidence .25 and IoU .25, with score-ordered, valid-GT-first greedy matching. Source-ignore neutralization uses the COCO crowd overlap convention: an otherwise unmatched prediction is suppressed when its intersection-over-prediction-area is at least .5 \cite{lin2014microsoft}. AP-cap and matching controls are reported separately in the supplementary material.
-
-\subsection{Common-coverage rank protocol}
-For two configurations $a,b$ and a registered rule $r$, the pairwise margin is $\Delta_{ab}(r)=m_a(r)-m_b(r)$. We evaluate margins only on the common image set and treat exact ties as unstable. The headline comparison fixes policy $N$ and IoU .25. A supplementary 14-threshold-by-eight-confidence sensitivity surface locates finite-grid decision boundaries; it does not extrapolate beyond the declared grid. For headline and observed-boundary cells, a paired bootstrap resamples the 548 images jointly for both configurations 10,000 times and reports the percentile 95\% interval of $\Delta_{ab}$.
-
-\subsection{Formal properties of the audit}
-The two support coordinates deliberately answer different questions. Under isotropic resizing by a factor $\alpha>0$, absolute support becomes $s_a'=\alpha s_a$, whereas
-\begin{equation}
- s_n'=\max\left(\frac{\alpha w}{\alpha W},\frac{\alpha h}{\alpha H}\right)=s_n.
-\end{equation}
-Thus normalized support is invariant to isotropic image resizing, while a fixed-pixel rule remains tied to the delivered image scale. This property does not make either coordinate universally preferable; it explains why their retained-target fractions must be reported separately.
-
-Common coverage is an identifiability condition rather than a cosmetic balancing choice. If two configurations are observed on different image subsets and their TP, FP, and FN contributions on unobserved images are unconstrained, the observed-subset counts cannot identify their full-population micro-$F_1$ ordering: one completion of the missing images can favor $a$, while another can favor $b$ without changing any observed count. We therefore make no rank statement for incompletely covered AI-TOD.
-
-The deterministic and resampling parts of the rank audit are also distinct. For a finite audited rule set $\mathcal R_h$, define the candidate-level rule band and the reference-winner differential radius as
+\subsection{Ordered contract-path decomposition}
+Let $G$ be mapped valid boxes, $G_t\subseteq G$ the boxes retained by support rule $t$, $D_t=G\setminus G_t$ the removed boxes, and $H$ the source-provided ignore regions. We register four contracts as ordered pairs of scored valid and neutral regions:
 \begin{align}
- B_k(\mathcal R_h)&=\max_{r\in\mathcal R_h}m_k(r)-\min_{r\in\mathcal R_h}m_k(r),\\
- \Gamma_j(\mathcal R_h)&=\max_{r\in\mathcal R_h}|\Delta_j(r)-\Delta_j(r_0)|,
+\mathcal C_A&=(G,\varnothing), & \mathcal C_F&=(G_t,\varnothing),\nonumber\\
+\mathcal C_R&=(G_t,D_t), & \mathcal C_S&=(G_t,D_t\cup H).
 \end{align}
-where $k^\star$ wins at $r_0$ and $\Delta_j(r)=m_{k^\star}(r)-m_j(r)$. If $\Delta_j(r_0)>\Gamma_j(\mathcal R_h)$ for every competitor $j$, then $k^\star$ remains the winner throughout $\mathcal R_h$; moreover,
+$A$ scores all valid boxes with ignore protection off. $F$ filters the target and leaves detections on removed objects eligible as false positives. $R$ keeps the same filtered target but makes removed objects neutral. $S$ then adds source-provided ignores. In every contract, detections are processed by descending score, retained valid GT is matched first, and only an unmatched detection can be neutralized. Ignore overlap follows the COCO crowd denominator, intersection over prediction area, at .5 \cite{lin2014microsoft}.
+
+For metric $m$ at rule $t$, define adjacent path changes
+\begin{align}
+\delta_{\rm target}&=m_F-m_A, &
+\delta_{\rm removed}&=m_R-m_F,\nonumber\\
+\delta_{\rm source}&=m_S-m_R.&&
+\end{align}
+They satisfy the exact path identity
 \begin{equation}
- \Gamma_j(\mathcal R_h)\leq B_{k^\star}(\mathcal R_h)+B_j(\mathcal R_h).
+m_S-m_A=\delta_{\rm target}+\delta_{\rm removed}+\delta_{\rm source}.
 \end{equation}
-The certificate concerns a declared finite rule set. The paired bootstrap instead asks whether a selected pairwise advantage is resolved under image resampling. A positive deterministic margin therefore does not substitute for an interval, and a wide candidate-level rule band does not by itself imply a rank reversal.
+The associated ledger records the exact $\Delta$TP, $\Delta$FP, and $\Delta$FN at each step. Because $F_1$ is nonlinear, these are path-specific evaluator transitions, not order-free causal effects. The deterministic contract range $C_m(t)=\max_{c\in\{A,F,R,S\}}m_c(t)-\min_c m_c(t)$ remains a compact summary, but it is not a confidence interval.
+
+The path also imposes implementation invariants. Each detection can match at most one scored valid box; scored-valid matching precedes neutralization; and a detection neutralized by $D_t$ or $H$ is neither TP nor FP. For micro-$F_1=2\mathrm{TP}/(2\mathrm{TP}+\mathrm{FP}+\mathrm{FN})$, the ledger is regenerated from image-level integer counts and must close both the count totals and the endpoint identity above. These checks distinguish a semantic contract change from accidental rematching or denominator drift.
+
+\subsection{Metric- and cluster-qualified rank protocol}
+The metric layer replays one registered baseline artifact per source at confidence and IoU .25. The rank layer uses five fixed VisDrone configurations with identical 548/548 raw coverage: B-640, B-1280, Y11m, ASD, and Y11n-P2. At terminal contract $S$ and each headline support, we report global micro-$F_1$ at confidence .25, max-$F_1$ over the registered confidence grid $.10$--$.50$, and AP50 with a nontruncating terminal \texttt{maxDets}=2000. AP integrates score ordering and uses IoU .50; max-$F_1$ removes dependence on one confidence operating point while retaining IoU .25.
+
+VisDrone filenames identify 76 sequences. A paired cluster replicate samples 76 sequence identifiers with replacement, includes every image in each sampled sequence, applies identical multiplicities to both configurations, and recomputes pooled TP/FP/FN or pooled-detection AP. We use 10,000 replicates and percentile 95\% intervals. Image-paired results are retained as a supplementary control. Finite-grid boundary cells are exploratory and are not used for confirmatory inference after inspection. Finally, an independent detection-record AP implementation is checked against COCOeval at the two candidates and two headline rules.
+
+The ontology mappings, image denominators, support grid, contract order, headline rules, confidence grid, candidate pool, named top pair, AP cap, sequence definition, bootstrap seed, and replicate count are stored as machine-readable records. Only the two headline supports enter confirmatory pairwise statements. The larger 14-support-by-eight-confidence surface is retained for sensitivity visualization and boundary discovery, not for post-selection pointwise inference.
 
 \section{Results}
-\subsection{Layer 1: Annotation-support mismatch}
+\subsection{Coverage and support qualification}
+Figure~\ref{fig:coverage} shows full coverage for VisDrone (548/548) and UAVDT (305/305), but 1,869/2,804 images for AI-TOD. At 24 pixels, full-source retained support is 73.3\%, 95.1\%, and 9.7\%; at .015 it is 89.8\%, 97.4\%, and 81.0\%. Normalization narrows the three-source headline spread but does not remove it.
+
+AI-TOD's missingness is support selective. Its covered images are 66.7\% of the validation images but contain 16,900/59,904=28.2\% of vehicle boxes. Covered and noncovered images average 9.0 and 46.0 boxes; their medians are 0 and 21. The covered-subset retained fraction is 12.0\% at 24 pixels and 55.3\% at .015, versus 9.7\% and 81.0\% on the full annotations. AI-TOD therefore passes support diagnosis, but its metric values below describe only the registered covered subset.
+
+The qualification is not triggered by coverage rate alone. Covered versus noncovered images have a boxes-per-image standardized mean difference of $-.673$; at box level, max-side Wasserstein distances are 2.96 pixels and .00370 in normalized units. Consequently, the uncovered part is neither treated as empty prediction nor repaired by weighting. The audit preserves two separate quantities: full-annotation support and covered-subset contract response.
+
+\subsection{Contract-path attribution}
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=.98\textwidth]{../figures/fig_support_mismatch.pdf}
-\caption{Annotation-support mismatch. (a) Raw prediction coverage establishes the evaluation denominator before vehicle-class filtering. (b) A 24-pixel cutoff retains 73.3\%, 95.1\%, and 9.7\% of vehicle ground truth in VisDrone, UAVDT, and AI-TOD. (c) The normalized .015 rule retains 89.8\%, 97.4\%, and 81.0\%. AI-TOD is displayed for support diagnosis only because its prediction coverage is incomplete.}\label{fig:support}
+\includegraphics[width=.98\textwidth]{../figures/fig_contract_path_decomposition.pdf}
+\caption{Registered $A\!\rightarrow\!F\!\rightarrow\!R\!\rightarrow\!S$ micro-$F_1$ paths for one fixed baseline artifact per source at confidence and IoU .25. (a) Absolute 24-pixel support. (b) Normalized .015 support. Adjacent labels are exact path changes; UAVDT and AI-TOD have no active source-ignore regions, hence $R=S$. AI-TOD values are conditioned on 1,869 covered images.}\label{fig:path}
 \end{figure*}
 
-Figure~\ref{fig:support} is the first link in the chain. A common 24-pixel threshold changes the retained target from nearly all UAVDT vehicles to fewer than one tenth of AI-TOD vehicles. The .015 normalized rule narrows this disparity, retaining 81.0--97.4\% across the three sources at the headline value. The result is not that one support domain is universally preferable; it is that the target shift is measurable and should accompany the score that follows it.
+Figure~\ref{fig:path} turns endpoint movement into an evaluator mechanism. At 24 pixels, the VisDrone path is $-.036,+.067,+.009$: filtering initially lowers $F_1$, removed-object neutralization more than recovers that loss, and source ignores add a smaller shift. The count ledger explains the middle step exactly: $F\!\rightarrow\!R$ changes no TP or FN but neutralizes 2,320 false positives. At .015, all three VisDrone steps are positive ($+.018,+.009,+.008$), showing that the sign of target filtering itself depends on the declared support.
 
-The coverage record also decides which sources can progress to the later layers. AI-TOD's covered subset contains 16,900 vehicle boxes in 1,869 images (9.0 boxes/image), whereas its 935 noncovered images contain 43,004 boxes (46.0 boxes/image). We therefore retain AI-TOD for support diagnosis rather than a model comparison. The complete VisDrone and UAVDT records, by contrast, preserve images with empty retained predictions and their false-negative contribution.
+UAVDT moves little ($-.009,+.004,0$ at 24 pixels and $-.002,+.001,0$ at .015). AI-TOD behaves differently. Its absolute $A\!\rightarrow\!F$ change is $-.330$, followed by $+.080$ when 30,232 detections near removed objects become neutral; the terminal score remains .145 rather than returning to .395. At .015 the corresponding changes are $-.136$ and $+.066$. Thus the large AI-TOD endpoint range is not solely an artifact of counting detections on removed boxes as background: removed-object handling explains a substantial, separately measured component, while target contraction remains dominant.
 
-\subsection{Layer 2: Controlled perturbation across three sources}
+Normalized support reduces, but does not eliminate, contract sensitivity in every source. The full four-contract range falls from .076 to .035 for VisDrone, from .0085 to .0023 for UAVDT, and from .330 to .136 for coverage-conditioned AI-TOD. The common direction is consistent with scale invariance, whereas the unequal residual ranges show why normalized support cannot substitute for a source-specific contract audit.
+
+\subsection{Metric- and sequence-qualified ranking}
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=.98\textwidth]{../figures/fig_controlled_support_perturbation.pdf}
-\caption{Controlled support perturbation and metric uncertainty on the five-configuration VisDrone pool. Each vertical span is $B_{F_1}^{\pi}(t)$ for one configuration; colored points are $I$ (blue), $O$ (red), and $N$ (green). (a) Absolute-24-pixel bands span .031--.093. (b) Normalized-.015 bands span .013--.035.}\label{fig:perturbation}
+\includegraphics[width=.98\textwidth]{../figures/fig_metric_cluster_qualified_rank.pdf}
+\caption{Metric-qualified ranking under terminal contract $S$ on the common 548-image VisDrone set. (a) Ranks and Y11m/ASD point values for fixed-$F_1$, max-$F_1$, and AP50 at both headline supports. (b) Y11m--ASD differences with 95\% intervals from 10,000 paired resamples of 76 filename-derived sequences. Positive values favor Y11m. AP is recomputed from pooled detections in every replicate.}\label{fig:rank}
 \end{figure*}
 
-\begin{table*}[!t]
-\centering
-\caption{Three-source baseline replay at the headline rules. $\rho_{\rm cov}$ is retained GT on the metric-covered images; confidence and IoU are .25.}
-\label{tab:endpoints}
-\small
-\setlength{\tabcolsep}{4.5pt}
-\renewcommand{\arraystretch}{1.06}
-\begin{tabular}{llrrr@{\quad}rrrr}
-\toprule
-Source & Candidate & Coverage & Rule & $\rho_{\rm cov}$ & $I$ & $O$ & $N$ & $B_{F_1}^{\pi}$\\
-\midrule
-VisDrone & B-640 & 548/548 & 24 px & 73.3\% & .7719 & .7359 & .7438 & .0360\\
-         &       &         & .015  & 89.8\% & .7719 & .7897 & .7973 & .0254\\
-UAVDT & UAVDT-Base & 305/305 & 24 px & 95.1\% & .3453 & .3367 & .3367 & .0085\\
-            &            &         & .015  & 97.4\% & .3453 & .3430 & .3430 & .0023\\
-AI-TOD$^\dagger$ & AI-TOD-Base & 1,869/2,804 & 24 px & 12.0\% & .3952 & .0648 & .0648 & .3303\\
-                  &             &             & .015  & 55.3\% & .3952 & .2593 & .2593 & .1359\\
-\bottomrule
-\end{tabular}
-\vspace{1pt}\parbox{.96\textwidth}{\footnotesize $^\dagger$AI-TOD endpoints and $\rho_{\rm cov}$ are conditioned on the 1,869 images with raw prediction coverage; the source-level support fractions over all 2,804 images are 9.7\% and 81.0\% in Table~\ref{tab:support}.}
-\end{table*}
+The fixed operating point favors Y11m over ASD at both rules: the absolute difference is .0229 [.0185,.0275], and the normalized difference is .0158 [.0118,.0201]. Reoptimizing each configuration over the registered confidence grid preserves the direction, with max-$F_1$ differences .0163 [.0119,.0213] and .0099 [.0060,.0140]. The operational $F_1$ result is therefore not explained only by the choice of confidence .25.
 
-Table~\ref{tab:endpoints} traces the support mismatch into the metric layer under one baseline artifact per source. At 24 pixels, the policy band is .036 for VisDrone, .009 for UAVDT, and .330 for coverage-conditioned AI-TOD; at .015, the corresponding bands are .025, .002, and .136. The same nominal rule therefore produces not only different retained targets but also markedly different metric responses. AI-TOD's covered subset is reported rather than silently treated as the full validation set.
+AP50 prevents a broader winner claim. At 24 pixels, Y11m--ASD is .0013 [$-.0033$,.0052], which is sequence-unresolved. At .015, the difference is $-.0110$ [$-.0181$,$-.0057$], favoring ASD. The stricter localization and score-integrated metric therefore changes the top-pair conclusion even though the lower three ranks remain fixed. This negative result is the purpose of metric qualification: Y11m leads for the registered IoU-.25 $F_1$ objectives, but no detector-wide winner is supported. The custom AP50 values match COCOeval exactly to the reported precision at all four checked endpoints.
 
-Within the five-configuration VisDrone pool, Fig.~\ref{fig:perturbation} shows that 24-pixel bands range from .031 (Y11m) to .093 (B-1280); at .015, they range from .013 (Y11n-P2) to .035 (Y11m). Filtering can raise or lower a score because it changes the valid target and the treatment of unmatched predictions. The figure therefore reports uncertainty of the evaluation contract, rather than attributing a policy-sensitive score to an unobserved annotation-error mechanism.
+\subsection{Evaluator controls}
+The registered AP cap is 2,000 detections per image, while the largest observed candidate output is 1,881; headline AP therefore contains no cap-truncated image. This matters because caps of 100 or 300 alter dense aerial-image comparisons even when the winner does not change. For the two candidates and two headline contracts, the independent score-ordered AP calculation and COCOeval agree to machine precision. A separate threshold-first Hungarian replay on the released matching-control subset agrees with greedy matching on the selected winner in all 24 multi-candidate settings; its largest absolute $F_1$ difference is .00546. The matching control validates an aligned component rather than extending the headline rank claim.
 
-The $O$--$N$ comparison isolates source-ignore handling at the same filtered target. At 24 pixels, enabling valid-first source-ignore neutralization moves $F_1$ by .008--.022 across the five configurations. The larger $I$--filtered separations in Fig.~\ref{fig:perturbation} show why the support rule and removed-object treatment must be stated together: a single endpoint alone cannot reveal which evaluative change produced it.
+Sequence and image resampling also give the same qualitative qualification. The image-paired intervals are [.0186,.0274], [.0122,.0204], and [$-.0035$,.0044] for absolute fixed-$F_1$, max-$F_1$, and AP50, and [.0117,.0199], [.0060,.0136], and [$-.0167$,$-.0078$] for their normalized counterparts. We nevertheless use sequence intervals as the primary record because adjacent VisDrone frames are not exchangeable independent observations.
 
-For the VisDrone B-640 artifact, $N$ is below $I$ at 24 pixels but above $I$ at .015. Because predictions are unchanged, this sign change cannot be interpreted as detector improvement or degradation. UAVDT and AI-TOD contain no active source-ignore regions in this mapping, so $O=N$ there; their bands isolate target filtering. The nonzero VisDrone $O$--$N$ separation isolates source-ignore neutralization at the same filtered target.
+\balance
+\section{Discussion}
+The gate, path, ledger, and cluster interval answer different questions. Coverage determines which population is observed. Retained support states which valid target remains. The ordered path attributes deterministic metric movement to one evaluator change at a time. Cross-metric paired intervals then state whether a named configuration comparison is resolved on common sequences. A support shift is not sampling uncertainty, and a resolved $F_1$ margin is not automatically an AP conclusion.
 
-\subsection{Layer 3: Rank robustness on common coverage}
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{../figures/fig_common_coverage_rank_summary.pdf}
-\caption{Common-coverage rank robustness for five fixed VisDrone configurations. (a) Blue circles are absolute-24-pixel and orange squares normalized-.015 $F_1$ values under policy $N$; all configurations use the same 548 images. (b) H-a/H-n are the two headline comparisons and B-a/B-n are observed finite-grid boundary cells. Error bars are 95\% image-paired bootstrap intervals from 10,000 resamples.}\label{fig:rank}
-\end{figure}
+We therefore qualify a rank statement along three independent axes. It is \emph{coverage qualified} only on an explicit common image set, \emph{metric qualified} only for the declared localization and score treatment, and \emph{sampling qualified} only relative to the registered resampling unit. Failure on one axis does not invalidate evidence on the others; it narrows the sentence that can be supported. In this study, Y11m's VisDrone advantage is coverage and sequence qualified for the two IoU-.25 $F_1$ objectives, whereas the AP50 record is unresolved at 24 pixels and reverses at .015. AI-TOD endpoints are contract qualified on covered images but not coverage qualified for the full benchmark.
 
-The headline comparison is made on exactly the same 548 images for all five configurations. At absolute 24 pixels, Y11m has $F_1=.8181$ versus .7732 for ASD, giving $\Delta=.0449$ with a paired 95\% interval [.0391,.0506]. At normalized .015, the corresponding values are .8741 and .8465, with $\Delta=.0277$ [.0234,.0321]. Y11m remains the winner and ASD the runner-up at both declared headline rules; the lower B-640/B-1280 order changes, which Fig.~\ref{fig:rank}(a) makes visible rather than averaging away.
+The path is an audit coordinate system, not a claim that $S$ is universally correct. Applications may choose whether removed valid objects should be background or neutral, but that choice should be explicit and its consequence reported. Likewise, resize invariance makes normalized support comparable under uniform scaling; it does not remove source semantics or acquisition differences. The three-source results empirically demonstrate both points.
 
-Supplementary sensitivity surfaces identify where a point ordering is not an established advantage. At the normalized .010/confidence-.30 boundary, Y11m--ASD is .00015 [$-.00435$, .00477]; at the absolute-64-pixel/confidence-.35 boundary, B-640--Y11m is .00095 [$-.00492$, .00677]. Table~\ref{tab:rankrecords} records the four paired comparisons. The conclusion is therefore scoped to the declared headline rules: their Y11m--ASD margins are resolved on common coverage, whereas near-boundary ranks require an uncertainty qualifier.
+The ordered path supplies information that an endpoint band cannot. Comparing $A$ with $S$ alone would merge a target change, a removed-object decision, and native ignore semantics into one number. The intermediate counts show which mechanism dominates and whether a recovery is caused by fewer FN, by neutralized FP, or by both. This attribution is especially important when a support cutoff removes many labeled objects, because a large score response can otherwise be mistaken for model instability or annotation error.
 
-This contrast separates score movement from a model conclusion. A fixed rule can move several configurations in the same direction while preserving their pairwise separation. Conversely, a small differential response can overturn a near tie. The sensitivity surface locates these finite-grid decision regions; the paired interval determines whether a selected pairwise advantage is resolved at the image level.
+The practical output is a compact audit record rather than a preferred universal threshold. It contains the annotation denominator and prediction coverage; retained support in absolute and normalized coordinates; contract endpoints and integer count transitions; the exact common set and metric definition used for each comparison; and paired uncertainty at the source's dependence unit. These fields make two studies comparable even when they choose different valid application contracts. They also expose when an apparent robustness claim comes from a saturated detection cap, an incomplete prediction cache, a fixed confidence calibration, or image-wise resampling of correlated frames.
 
-\begin{table}[!t]
-\centering
-\caption{Common-coverage paired $F_1$ records (10,000 image-paired replicates). H = headline; B = observed finite-grid boundary.}\label{tab:rankrecords}
-\small
-\setlength{\tabcolsep}{3.0pt}
-\renewcommand{\arraystretch}{1.06}
-\begin{tabular}{llrr}
-\toprule
-Cell & Pair & $\Delta$ & 95\% interval\\
-\midrule
-H-a: 24 px, .25 & Y11m--ASD & .0449 & [.0391,.0506]\\
-H-n: .015, .25 & Y11m--ASD & .0277 & [.0234,.0321]\\
-B-n: .010, .30 & Y11m--ASD & .00015 & [$-.00435$,.00477]\\
-B-a: 64 px, .35 & B-640--Y11m & .00095 & [$-.00492$,.00677]\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Discussion and Reproducibility}
-The audit turns an evaluation question into a traceable sequence. First report how much annotation support remains; then expose how an explicit target/ignore perturbation moves the metric; finally state whether a frozen configuration-pool conclusion persists on common coverage and under paired uncertainty. This sequence separates target drift from metric sensitivity and from a model comparison.
-
-The three numerical objects have different estimands. $\rho_s(t)$ is a pooled box-level property of the mapped annotations and is computed before prediction matching. $B_m^{\pi}(t)$ is a deterministic range over three declared evaluator policies for one fixed prediction artifact; it is not a confidence interval. $\Delta_{ab}(r)$ is a pairwise difference on a named common image set, while its bootstrap interval uses images, not boxes, as the resampling unit. Reporting them in one record prevents a large support shift from being described as statistical uncertainty and prevents an image-level interval from being generalized to unobserved images or configurations.
-
-This separation yields an operational interpretation. First, a result is \emph{target-sensitive} when its retained-support denominator changes materially. Second, it is \emph{contract-sensitive} when the policy band is non-negligible relative to the scientific comparison. Third, a model conclusion is \emph{resolved on common coverage} only when the candidate pair uses the same image universe and the paired interval supports the stated direction. These labels are cumulative: a comparison may be target- and contract-sensitive while still having a resolved pairwise margin, as the two headline Y11m--ASD records demonstrate.
-
-For a compact comparison record, the three layers translate into three released objects: a source-level retained-support curve with the raw coverage denominator; a candidate-level table of policy endpoints and $B_m^{\pi}(t)$; and a pairwise common-coverage record containing the rule, point margin, resampling unit, and interval. These objects can accompany a conventional AP or $F_1$ table without altering a detector. They identify whether an apparent gain follows a changed target, a changed contract, or a reproducible candidate difference.
-
-\begin{table}[!t]
-\centering
-\caption{Minimal support-conditioned comparison record.}\label{tab:record}
-\small
-\setlength{\tabcolsep}{2.8pt}
-\renewcommand{\arraystretch}{1.10}
-\begin{tabular}{p{.23\columnwidth}p{.69\columnwidth}}
-\toprule
-Layer & Released primitive and question resolved\\
-\midrule
-Support & Raw image coverage, $\rho_s(t)$, and the support coordinate: \emph{which valid target is scored?}\\
-Perturbation & $I/O/N$ endpoints and $B_m^{\pi}(t)$: \emph{how much does the metric move under the declared target/ignore contract?}\\
-Rank & Common image set, pairwise $\Delta_{ab}$, resampling unit, and interval: \emph{is a pool-specific ordering resolved?}\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The record is deliberately ordered. Support can be measured from annotations before predictions are replayed; metric uncertainty then holds a prediction artifact fixed while the contract changes; rank evidence is finally meaningful only after the compared configurations share the same image universe. This ordering gives a reviewer or downstream user a direct path from a plotted score to the target and comparison on which it rests.
-
-The scope follows directly from those denominators. AI-TOD establishes both a support mismatch and a coverage-conditioned metric response, but not a rank comparison: 935 of 2,804 images lack raw prediction coverage and the missing subset is structurally denser than the covered subset. The five VisDrone configurations support a within-pool conclusion on 548 shared images, not a detector-family leaderboard. Likewise, the finite threshold grid locates observed decision boundaries but does not certify rules outside that grid. Widening the claim would require new common-coverage artifacts or an explicit model for the missing outcomes.
-
-The supplementary material contains the complementary controls: full sensitivity surfaces, greedy--Hungarian matching checks, AP cap-contract checks, and structural DOTA-v2 evidence. These controls test evaluator boundaries without enlarging the central common-coverage rank claim. Code, configurations, derived evaluation records, figure-source tables, and checksums are available at \url{https://github.com/Marchematics/aerial-evaluation-audit}; licensed imagery and raw prediction artifacts remain referenced by manifest and hash.
+The evidence remains artifact scoped. AI-TOD has no full-benchmark metric or rank inference; VisDrone conclusions concern five frozen configurations; sequence clusters are derived from filenames; and no transition estimates annotation-error rates or causal detector effects. Full threshold records, the 18-row count ledger, coverage diagnostics, image-paired intervals, matching and cap checks, and replay instructions appear in the supplementary material and released repository: \url{https://github.com/Marchematics/aerial-evaluation-audit}.
 
 \section{Conclusion}
-Support-conditioned auditing connects annotation-support mismatch to a controlled metric perturbation and an uncertainty-qualified rank result. Across three declared aerial sources, the chain exposes large target shifts and source-dependent policy bands; on the common-coverage VisDrone pool, it further separates robust headline margins from unresolved boundary rankings. The practical recommendation is to release the support denominator, perturbation contract, and common-coverage paired comparison with each aerial-detection result.
+Coverage-qualified contract auditing converts a support-rule sensitivity check into a reproducible evaluation method. It identifies the observed population, measures support, decomposes target and ignore semantics with exact count transitions, and qualifies common-coverage ranks across metrics and sequence dependence. The resulting record explains large score movement without overstating a detector winner.
 
 \bibliographystyle{IEEEtran}\bibliography{references}
 \end{document}

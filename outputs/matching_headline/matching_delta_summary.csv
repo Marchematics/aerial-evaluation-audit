@@ -1,0 +1,2 @@
+settings,ranked_settings,winner_agreement_rate,max_abs_f1_delta,mean_abs_f1_delta,criterion_winner_agreement_ge_0_95,criterion_max_abs_f1_delta_lt_0_005
+84,24,1.0,0.0054584579856191695,0.0005715166847880917,True,False

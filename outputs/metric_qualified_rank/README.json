@@ -1,0 +1,32 @@
+{
+  "contract": "S",
+  "common_images": 548,
+  "sequence_clusters": 76,
+  "sequence_definition": "leading seven-digit VisDrone filename token",
+  "confidence_grid": [
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.5
+  ],
+  "f1_iou": 0.25,
+  "ap_iou": 0.5,
+  "ap_max_dets": 2000,
+  "replicates": 10000,
+  "seed": 20260715,
+  "top_pair": [
+    "visdrone_control_yolo11m_hf640",
+    "visdrone_control_asd1280"
+  ],
+  "metrics": [
+    "F1@.25",
+    "max-F1",
+    "AP50"
+  ],
+  "ap_bootstrap": "pooled detections recomputed for every paired resample",
+  "crosscheck_max_abs_difference": 0.0
+}

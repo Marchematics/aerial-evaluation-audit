@@ -1,0 +1,5 @@
+candidate,mode,threshold,contract,custom_ap50,cocoeval_ap50,difference,absolute_difference,tolerance,pass,max_dets,iou
+visdrone_control_yolo11m_hf640,absolute,24.0,S,0.923065158163156,0.923065158163156,0.0,0.0,0.0005,True,2000,0.5
+visdrone_control_yolo11m_hf640,normalized,0.015,S,0.8986028417223055,0.8986028417223055,0.0,0.0,0.0005,True,2000,0.5
+visdrone_control_asd1280,absolute,24.0,S,0.9217326077902102,0.9217326077902102,0.0,0.0,0.0005,True,2000,0.5
+visdrone_control_asd1280,normalized,0.015,S,0.9096266332737558,0.9096266332737558,0.0,0.0,0.0005,True,2000,0.5

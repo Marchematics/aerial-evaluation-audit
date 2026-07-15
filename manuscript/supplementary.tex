@@ -1,251 +1,196 @@
 \documentclass[journal]{IEEEtran}
-\usepackage{amsmath,amssymb,booktabs,graphicx,microtype,placeins,array}
+\usepackage{amsmath,booktabs,graphicx,microtype,array}
 \usepackage[hidelinks]{hyperref}
 \makeatletter
-\setlength{\@fptop}{0pt}\setlength{\@fpsep}{6pt}\setlength{\@fpbot}{0pt plus 1fil}
-\setlength{\@dblfptop}{0pt}\setlength{\@dblfpsep}{6pt}\setlength{\@dblfpbot}{0pt plus 1fil}
+\setlength{\@fptop}{0pt}\setlength{\@fpsep}{5pt}\setlength{\@fpbot}{0pt plus 1fil}
+\setlength{\@dblfptop}{0pt}\setlength{\@dblfpsep}{5pt}\setlength{\@dblfpbot}{0pt plus 1fil}
 \makeatother
-\setcounter{dbltopnumber}{1}
 \emergencystretch=2em\sloppy
-\title{Supplementary Material for ``Support-Conditioned Evaluation Auditing for Aerial Vehicle Detection''}
+\title{Supplementary Material for ``Coverage-Qualified Evaluation-Contract Auditing for Aerial Vehicle Detection''}
 \author{Xinling Wen, Jiahao Zhang, Wenqi Liu, Yangxu Ren, and Yu Chen}
 \begin{document}\maketitle
 \renewcommand{\thesection}{S\arabic{section}}
-\renewcommand{\thesubsection}{S\arabic{section}.\Alph{subsection}}
-\renewcommand{\thefigure}{S\arabic{figure}}
 \renewcommand{\thetable}{S\arabic{table}}
 \setcounter{page}{1}
 
-\section{Scope, Notation, and Registered Objects}
-This supplement contains the diagnostics that sit beneath, rather than beside, the three-layer audit in the main paper. The main claim follows the ordered chain \emph{annotation-support mismatch $\rightarrow$ controlled support perturbation $\rightarrow$ metric uncertainty $\rightarrow$ rank robustness on common coverage}. The materials below provide the complete retained-support grid, finite sensitivity surface, matching and cap controls, and structural-only DOTA-v2 evidence. They do not expand the five-configuration VisDrone rank pool or convert a policy-sensitive score into an annotation-error estimate.
-
-For source $s$, let $G_s$ denote mapped valid boxes and let $G_s(t)\subseteq G_s$ denote boxes retained by a support rule $t$. The retained-support fraction is $\rho_s(t)=|G_s(t)|/|G_s|$. For a box $(w,h)$ in image $(W,H)$, the registered coordinates are
-\begin{equation}
- s_a=\max(w,h), \qquad s_n=\max\left(\frac{w}{W},\frac{h}{H}\right).
-\end{equation}
-The normalized coordinate divides each box side by its corresponding image side before taking the maximum. It is not $\max(w,h)/\max(W,H)$.
-
-For fixed rule $t$ and metric $m$, the primary-policy band is
-\begin{equation}
- B_m^{\pi}(t)=\max_{\pi\in\{I,O,N\}}m(t,\pi)-\min_{\pi\in\{I,O,N\}}m(t,\pi),
-\end{equation}
-where $I$ includes all valid target boxes, $O$ excludes below-support boxes with source-ignore neutralization off, and $N$ uses the same filtered target with valid-GT-first source-ignore neutralization on. A removed valid box is not converted into an ignore region under any primary policy.
+\section{Registered Contracts and Count Ledger}
+The four contracts alter one evaluator factor at a time. All detections are score ordered; retained valid GT is matched before an otherwise unmatched detection can be neutralized. Removed and source-ignore regions use intersection over prediction area at .5. Table~\ref{tab:contracts} distinguishes the scored target from neutral regions explicitly.
 
 \begin{table}[!t]
 \centering
-\caption{Audit objects and their roles.}\label{tab:objects}
-\small
-\setlength{\tabcolsep}{2.4pt}
-\renewcommand{\arraystretch}{1.08}
-\begin{tabular}{p{.25\columnwidth}p{.65\columnwidth}}
+\caption{Registered evaluation contracts. $G$ is all valid GT, $G_t$ the support-retained target, $D_t=G\setminus G_t$, and $H$ source ignore.}\label{tab:contracts}
+\scriptsize
+\setlength{\tabcolsep}{1.8pt}\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{clll}
 \toprule
-Object & Role\\
+ID & Scored valid GT & Neutral regions & Step meaning\\
 \midrule
-$\rho_s(t)$ & Source-level target retained by a declared support rule.\\
-$B_m^{\pi}(t)$ & Metric response to the fixed-rule $I/O/N$ target--ignore contract.\\
-$\Delta_{ab}(r)$ & Pairwise margin for configurations $a,b$ on their common image set.\\
-Paired interval & Image-paired uncertainty interval for a named $\Delta_{ab}(r)$.\\
-Sensitivity surface & Auxiliary finite-grid map of the top configuration and small-gap cells.\\
+$A$ & $G$ & none & all-valid reference\\
+$F$ & $G_t$ & none & removed objects are background\\
+$R$ & $G_t$ & $D_t$ & neutralize removed objects\\
+$S$ & $G_t$ & $D_t\cup H$ & add source ignores\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The primary VisDrone rank record fixes policy $N$, IoU .25, and the shared 548-image evaluation set. It contains five fixed configurations, eight confidence values, eight absolute or six normalized support values, and 112 primary rule cells. The full evaluation record additionally stores the other two primary policies and IoU .50, for 3,360 global-$F_1$ rows.
-
-\section{Formal Basis for Common Coverage and Finite-Grid Ranks}
-\noindent\textbf{Lemma S1 (resize invariance).} Under isotropic resizing by factor $\alpha>0$, $s_a$ becomes $\alpha s_a$, whereas $s_n$ is unchanged.
-
-\noindent\emph{Proof.} The transformed tuple is $(\alpha w,\alpha h,\alpha W,\alpha H)$, so
-\[
-\max\left(\frac{\alpha w}{\alpha W},\frac{\alpha h}{\alpha H}\right)=
-\max\left(\frac{w}{W},\frac{h}{H}\right).
-\]
-Thus a fixed-pixel rule depends on image scale, while the registered normalized rule is invariant to isotropic resizing. \hfill$\square$
-
-\noindent\textbf{Proposition S1 (why common coverage is required).} Suppose two configurations are observed on different image subsets and their TP, FP, and FN contributions on unobserved images are unconstrained. Their full-population micro-$F_1$ ordering is not identified by the observed-subset counts.
-
-\noindent\emph{Proof.} Hold observed counts fixed. One completion can add favorable TP/FP/FN contributions to the unobserved part of configuration $a$ and unfavorable contributions to that of $b$, producing an $a$-leading full score. Reversing those unconstrained additions produces a $b$-leading score with the same observed data. Hence the full-population order is not uniquely determined. \hfill$\square$
-
-The proposition motivates the raw-coverage gate in the main paper. AI-TOD has 1,869/2,804 raw-prediction image coverage and therefore contributes to the support layer but not to a rank claim. Each primary VisDrone configuration covers all 548 validation images before vehicle-class filtering.
-
-For a finite audited rule set $\mathcal{R}_h$, define the \emph{candidate-level rule band}
-\begin{equation}
- B_k(\mathcal{R}_h)=\max_{r\in\mathcal{R}_h}m_k(r)-\min_{r\in\mathcal{R}_h}m_k(r).
-\end{equation}
-This object is distinct from the fixed-rule policy band $B_m^{\pi}(t)$. For reference rule $r_0$, its winner $k^\star$, and competitor $j$, define
-\begin{align}
- \Delta_j(r)&=m_{k^\star}(r)-m_j(r),\\
- \Gamma_j(\mathcal{R}_h)&=\max_{r\in\mathcal{R}_h}\left|\Delta_j(r)-\Delta_j(r_0)\right|.
-\end{align}
-
-\noindent\textbf{Proposition S2 (finite-grid winner certificate).} If $\Delta_j(r_0)>\Gamma_j(\mathcal{R}_h)$ for every competitor $j$, then $k^\star$ remains the winner for every $r\in\mathcal{R}_h$. Moreover,
-\begin{equation}
- \Gamma_j(\mathcal{R}_h)\leq B_{k^\star}(\mathcal{R}_h)+B_j(\mathcal{R}_h).
-\end{equation}
-
-\noindent\emph{Proof.} For every $r$, $\Delta_j(r)\geq\Delta_j(r_0)-|\Delta_j(r)-\Delta_j(r_0)|>0$, proving the first statement. For the second, write $x_k(r)=m_k(r)-m_k(r_0)$. Since both $m_k(r)$ and $m_k(r_0)$ lie in the range defining $B_k(\mathcal{R}_h)$, $|x_k(r)|\leq B_k(\mathcal{R}_h)$. The triangle inequality gives $|x_{k^\star}(r)-x_j(r)|\leq B_{k^\star}(\mathcal{R}_h)+B_j(\mathcal{R}_h)$; maximization over $r$ proves the bound. \hfill$\square$
-
-The certificate is a deterministic statement about a declared finite set. The main paper adds image-paired bootstrap intervals because a positive point margin and a resolved image-level advantage answer different questions.
-
-\section{Complete Retained-Support Record}
-Table~\ref{tab:retention} gives the pooled box-level support fractions for every registered threshold. It makes explicit why the same absolute rule can change the evaluation target differently across sources. The values are computed before prediction replay. The 24-pixel and .015 columns shown in the main paper are the two predeclared interior headline values.
-
-\begin{table*}[!t]
-\centering
-\caption{Complete retained valid vehicle ground truth (\%). Percentages are pooled box-level support fractions before prediction matching.}\label{tab:retention}
-\small
-\setlength{\tabcolsep}{5.2pt}
-\renewcommand{\arraystretch}{1.05}
-\begin{tabular}{llrrr@{\qquad}llrrr}
-\toprule
-Rule & Threshold & VisDrone & UAVDT & AI-TOD & Rule & Threshold & VisDrone & UAVDT & AI-TOD\\
-\midrule
-Absolute & 16 px & 85.7 & 99.6 & 47.6 & Normalized & .0050 & 100.0 & 100.0 & 99.9\\
-Absolute & 20 px & 79.5 & 98.8 & 20.4 & Normalized & .0075 & 98.8 & 100.0 & 99.6\\
-Absolute & 24 px & 73.3 & 95.1 & 9.7 & Normalized & .0100 & 96.5 & 99.8 & 98.2\\
-Absolute & 28 px & 67.5 & 77.5 & 5.8 & Normalized & .0150 & 89.8 & 97.4 & 81.0\\
-Absolute & 32 px & 62.1 & 56.4 & 4.2 & Normalized & .0200 & 82.4 & 80.0 & 47.6\\
-Absolute & 40 px & 52.3 & 34.3 & 2.5 & Normalized & .0300 & 67.6 & 46.4 & 9.7\\
-Absolute & 48 px & 42.7 & 30.0 & 1.4 & & & & &\\
-Absolute & 64 px & 27.7 & 17.7 & 0.4 & & & & &\\
-\bottomrule
-\end{tabular}
-\end{table*}
-\FloatBarrier
-
-The incomplete AI-TOD coverage is materially structured: the 1,869 covered images contain 16,900 vehicle boxes (9.0 per image), while 935 noncovered images contain 43,004 boxes (46.0 per image). This is why it remains a support-diagnosis source rather than a denominator for paired model ranking. UAVDT remains in the released record for its full coverage and support profile; the main rank analysis uses the expanded VisDrone pool to provide a five-configuration, common-coverage comparison.
+Table~\ref{tab:ledger} is the support-conditioned count-transition ledger behind Fig.~2 of the main paper. Every row is an exact adjacent-contract difference for one fixed prediction artifact. Summing the three $\Delta F_1$ values gives $F_{1,S}-F_{1,A}$ to machine precision. Because $F_1$ is nonlinear, the values are path-specific transitions rather than additive causal effects that are invariant to reordering.
 
 \begin{table}[!t]
 \centering
-\caption{Source eligibility in the three-layer audit.}\label{tab:scope}
-\small
-\setlength{\tabcolsep}{2.0pt}
-\renewcommand{\arraystretch}{1.07}
-\begin{tabular}{p{.27\columnwidth}p{.20\columnwidth}p{.43\columnwidth}}
+\caption{Exact TP/FP/FN transition ledger at confidence and IoU .25. A = absolute 24 px; N = normalized .015. AI-TOD is conditioned on its 1,869 covered images.}\label{tab:ledger}
+\tiny
+\setlength{\tabcolsep}{1.0pt}\renewcommand{\arraystretch}{.96}
+\begin{tabular}{llcrrrrr}
 \toprule
-Source & Raw coverage & Role in this manuscript\\
+Source & Rule & Step & $\Delta$TP & $\Delta$FP & $\Delta$FN & $\Delta$neutral & $\Delta F_1$\\
 \midrule
-VisDrone & 548/548 & Support, perturbation, and common-coverage rank pool.\\
-UAVDT & 305/305 & Support record and ancillary full-coverage control.\\
-AI-TOD & 1,869/2,804 & Support diagnosis only; no rank denominator.\\
-DOTA-v2 & structural & Horizontal-box proxy for structural scale evidence only.\\
+VisDrone & A & $A\to F$ & $-2256$ & $+2256$ & $-2288$ & 0 & $-.0360$\\
+         &   & $F\to R$ & 0 & $-2320$ & 0 & $+2320$ & $+.0667$\\
+         &   & $R\to S$ & 0 & $-293$  & 0 & $+293$  & $+.0093$\\
+VisDrone & N & $A\to F$ & $-399$ & $+399$ & $-1344$ & 0 & $+.0178$\\
+         &   & $F\to R$ & 0 & $-356$ & 0 & $+356$ & $+.0093$\\
+         &   & $R\to S$ & 0 & $-294$ & 0 & $+294$ & $+.0078$\\
+\midrule
+UAVDT & A & $A\to F$ & $-301$ & $+301$ & $-237$ & 0 & $-.0085$\\
+      &   & $F\to R$ & 0 & $-547$ & 0 & $+547$ & $+.0038$\\
+      &   & $R\to S$ & 0 & 0 & 0 & 0 & $.0000$\\
+UAVDT & N & $A\to F$ & $-105$ & $+105$ & $-182$ & 0 & $-.0023$\\
+      &   & $F\to R$ & 0 & $-193$ & 0 & $+193$ & $+.0014$\\
+      &   & $R\to S$ & 0 & 0 & 0 & 0 & $.0000$\\
+\midrule
+AI-TOD & A & $A\to F$ & $-11977$ & $+11977$ & $-2890$ & 0 & $-.3303$\\
+       &   & $F\to R$ & 0 & $-30232$ & 0 & $+30232$ & $+.0800$\\
+       &   & $R\to S$ & 0 & 0 & 0 & 0 & $.0000$\\
+AI-TOD & N & $A\to F$ & $-5707$ & $+5707$ & $-1840$ & 0 & $-.1359$\\
+       &   & $F\to R$ & 0 & $-12587$ & 0 & $+12587$ & $+.0660$\\
+       &   & $R\to S$ & 0 & 0 & 0 & 0 & $.0000$\\
 \bottomrule
 \end{tabular}
 \end{table}
 
+\section{Coverage Qualification and Full Support Grid}
+Raw prediction names establish coverage before class filtering. VisDrone and UAVDT cover all declared images. AI-TOD covers 1,869/2,804 images and is therefore eligible for full-annotation support diagnosis, a covered-subset metric replay, but not full-benchmark metric or rank inference. Its 1,869 covered images contain 16,900 boxes; the 935 noncovered images contain 43,004.
+
 \begin{table}[!t]
 \centering
-\caption{AI-TOD coverage-selection record.}\label{tab:aitodselection}
-\small
-\setlength{\tabcolsep}{2.2pt}
-\renewcommand{\arraystretch}{1.07}
+\caption{AI-TOD covered--noncovered image qualification. Brackets are median [Q1,Q3]. SMD uses covered minus noncovered means; $W_1$ is in the feature's native unit.}\label{tab:coverage}
+\tiny
+\setlength{\tabcolsep}{1.5pt}\renewcommand{\arraystretch}{1.04}
 \begin{tabular}{lrrrr}
 \toprule
-Subset & Images & Boxes & Boxes/img. & Median side\\
+Feature & Covered & Noncovered & SMD & $W_1$\\
 \midrule
-Covered & 1,869 & 16,900 & 9.0 & 12 px\\
-Not covered & 935 & 43,004 & 46.0 & 16 px\\
+Boxes/image & 0 [0,1] & 21 [7,58.5] & $-.673$ & 36.951\\
+Median side (px)$^a$ & 17 [12,22] & 16 [14,18] & $+.448$ & 5.597\\
+Fraction $<24$ px$^a$ & .895 [.600,1] & .961 [.857,1] & $-.640$ & .159\\
+Fraction $<.015$$^a$ & .018 [0,.410] & .009 [0,.111] & $+.610$ & .148\\
+Nearest distance$^b$ & .031 [.016,.065] & .027 [.018,.055] & $+.029$ & .009\\
+\bottomrule
+\multicolumn{5}{p{.96\columnwidth}}{\scriptsize $^a$Nonempty images. $^b$Images with at least two vehicle boxes; centers normalized by image size.}
+\end{tabular}
+\end{table}
+
+The image-level record shows that incomplete coverage is not exchangeable with the full validation set. The covered subset has many empty vehicle images, yet among nonempty images its per-image support composition also differs. At the box level, covered and noncovered median max sides are 12 and 16 pixels; the normalized-support Wasserstein distance is .00370. No weighting or imputation is used to extrapolate the conditional metric endpoints.
+
+\begin{table}[!t]
+\centering
+\caption{Complete pooled retained valid vehicle GT (\%) before prediction matching.}\label{tab:retention}
+\scriptsize
+\setlength{\tabcolsep}{2.8pt}\renewcommand{\arraystretch}{.98}
+\begin{tabular}{llrrr}
+\toprule
+Rule & Threshold & VisDrone & UAVDT & AI-TOD\\
+\midrule
+Absolute & 16 px & 85.7 & 99.6 & 47.6\\
+ & 20 px & 79.5 & 98.8 & 20.4\\
+ & 24 px & 73.3 & 95.1 & 9.7\\
+ & 28 px & 67.5 & 77.5 & 5.8\\
+ & 32 px & 62.1 & 56.4 & 4.2\\
+ & 40 px & 52.3 & 34.3 & 2.5\\
+ & 48 px & 42.7 & 30.0 & 1.4\\
+ & 64 px & 27.7 & 17.7 & 0.4\\
+\midrule
+Normalized & .0050 & 100.0 & 100.0 & 99.9\\
+ & .0075 & 98.8 & 100.0 & 99.6\\
+ & .0100 & 96.5 & 99.8 & 98.2\\
+ & .0150 & 89.8 & 97.4 & 81.0\\
+ & .0200 & 82.4 & 80.0 & 47.6\\
+ & .0300 & 67.6 & 46.4 & 9.7\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\section{Auxiliary Sensitivity Surface and Policy Endpoints}
-The primary finite surface contains 112 cells: 64 absolute and 48 normalized. It has three distinct winners and 11 distinct complete orders. The smallest observed top-two margin is .000150 at normalized .010 and confidence .30, where Y11m exceeds ASD; the image-paired interval for that cell spans zero in the main-paper record. Thus, the surface is a sensitivity diagnostic, not a detector leaderboard or a replacement for the two declared headline comparisons.
+\section{Paired Rank Records and Evaluator Controls}
+Table~\ref{tab:rank} gives both resampling units for the registered Y11m--ASD pair. Sequence clusters are the leading seven-digit VisDrone filename tokens (76 clusters). Every cluster replicate includes all images in a sampled sequence and uses the same multiplicities for both configurations. Global counts and pooled-detection AP are recomputed for each replicate; AP is never averaged across images or sequences.
 
-The fixed-rule policy band and the full rule surface answer different questions. At a declared support threshold, $B_{F_1}^{\pi}(t)$ quantifies the response to the three target--ignore treatments. Across thresholds and confidence values, the winner surface identifies where the selected configuration changes or its lead becomes small. Keeping these records separate prevents a metric-policy response from being conflated with a ranking conclusion.
-
-\begin{figure*}[!t]
+\begin{table}[!t]
 \centering
-\includegraphics[width=.98\textwidth]{../figures/fig_supplement_rank_surface.pdf}
-\caption{Auxiliary finite sensitivity surface for the five-configuration VisDrone pool, under policy $N$ and IoU .25. Cell color is the configuration with the largest global micro-$F_1$; crosses mark top-two gaps below .01. Dotted vertical lines mark the 24-pixel and .015 headline supports. This surface locates finite-grid sensitivity; the common-coverage bootstrap records in the main paper qualify selected pairwise conclusions.}\label{fig:surface}
-\end{figure*}
-\FloatBarrier
-
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=.98\textwidth]{../figures/fig_supplement_policy_band_surfaces.pdf}
-\caption{Full fixed-rule metric-sensitivity surfaces for the same pool. Each cell is $B_{F_1}^{\pi}(t)$ across the $I/O/N$ policies at IoU .25; columns are configurations, rows are absolute and normalized support. The warm high-threshold region is an evaluator-response pattern under the declared contract, not an annotation-error estimate.}\label{fig:bandsurface}
-\end{figure*}
-
-The full band surfaces in Fig.~\ref{fig:bandsurface} show why the main paper reports a policy band rather than a single filtered score. Absolute high-threshold cells produce broad metric responses for every configuration, while normalized support produces a different, generally more localized response pattern. The figure retains those full surfaces as supplementary sensitivity evidence; the main text uses the two declared interior headline rules to keep the support-to-decision chain readable.
-
-\begin{table*}[!t]
-\centering
-\caption{Exact global micro-$F_1$ policy endpoints and fixed-rule policy bands for the main five-configuration VisDrone pool (confidence and IoU .25).}\label{tab:endpoints}
-\small
-\setlength{\tabcolsep}{4.2pt}
-\renewcommand{\arraystretch}{1.07}
-\begin{tabular}{lrrrr@{\qquad}rrrr}
+\caption{Y11m--ASD paired differences under terminal contract $S$ (10,000 replicates). A = 24 px; N = .015.}\label{tab:rank}
+\tiny
+\setlength{\tabcolsep}{1.2pt}\renewcommand{\arraystretch}{1.03}
+\begin{tabular}{llrrrrr}
 \toprule
-& \multicolumn{4}{c}{Absolute 24 px} & \multicolumn{4}{c}{Normalized .015}\\
-Configuration & $I$ & $O$ & $N$ & $B_{F_1}^{\pi}$ & $I$ & $O$ & $N$ & $B_{F_1}^{\pi}$\\
+Rule & Metric & Y11m & ASD & Diff. & Seq. 95\% & Image 95\%\\
 \midrule
-B-640 & .7719 & .7359 & .7438 & .0360 & .7719 & .7897 & .7973 & .0254\\
-B-1280 & .7966 & .7036 & .7261 & .0930 & .7966 & .7774 & .8000 & .0226\\
-Y11m & .8390 & .8080 & .8181 & .0310 & .8390 & .8643 & .8741 & .0351\\
-ASD & .8357 & .7599 & .7732 & .0759 & .8357 & .8332 & .8465 & .0133\\
-Y11n-P2 & .8173 & .7473 & .7601 & .0699 & .8173 & .8141 & .8267 & .0126\\
+A & $F_1@.25$ & .8927 & .8697 & $+.0229$ & [.0185,.0275] & [.0186,.0274]\\
+A & max-$F_1$ & .8979 & .8816 & $+.0163$ & [.0119,.0213] & [.0122,.0204]\\
+A & AP50 & .9231 & .9217 & $+.0013$ & [$-.0033$,.0052] & [$-.0035$,.0044]\\
+N & $F_1@.25$ & .8831 & .8673 & $+.0158$ & [.0118,.0201] & [.0117,.0199]\\
+N & max-$F_1$ & .8831 & .8732 & $+.0099$ & [.0060,.0140] & [.0060,.0136]\\
+N & AP50 & .8986 & .9096 & $-.0110$ & [$-.0181$,$-.0057$] & [$-.0167$,$-.0078$]\\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}
 
-Table~\ref{tab:endpoints} is the numerical record behind the policy spans in the main figure. The endpoint movement is not interpreted as a label-error rate: it is the observed response of a fixed prediction pool to an explicitly declared target--ignore contract.
+The image and sequence intervals lead to the same qualification, but the sequence interval is the main inferential record. Fixed- and optimized-confidence $F_1$ favor Y11m at both rules. AP50 is unresolved at 24 pixels and favors ASD at .015. These outcomes preclude a metric-independent winner claim rather than being reconciled by selective reporting.
 
-\section{Ancillary Evaluator Controls and Structural Evidence}
-For optional COCO-style AP replay, a terminal cap of 2,000 exceeds every mapped vehicle-prediction count in the expanded pool: no covered image is truncated, while the observed maximum is 1,881. In contrast, \texttt{maxDets}=100 truncates 53.1--86.9\% of covered images across the five configurations, and \texttt{maxDets}=300 truncates 0.5--54.9\%. Figure~\ref{fig:controls} records this metric-contract check; it does not modify the $F_1$ support-perturbation or rank analysis.
+The registered AP cap is 2,000 detections per image. The observed maximum is 1,881, so no image in the five-configuration pool is truncated; caps of 100 and 300 truncate many dense-image outputs and are not used for headline AP. An independent score-ordered AP implementation and COCOeval agree exactly at both Y11m/ASD headline rules (maximum observed absolute difference $<10^{-12}$). A separate threshold-first Hungarian control on the released legacy-cache subset selects the same top configuration as greedy matching in 24/24 multi-candidate settings; the maximum absolute $F_1$ difference is .00546. These checks validate aligned evaluator components without expanding the scientific claim.
 
-The released legacy-cache matching subset provides a separate threshold-first Hungarian check of score-ordered greedy matching. Across 84 evaluated setting--candidate records and 24 multi-candidate ranking settings, greedy and Hungarian select the same top configuration in 24/24 cases. The largest absolute $F_1$ difference is .00546 (mean .000571). Because it uses a legacy cache subset rather than the expanded five-configuration pool, this remains an ancillary implementation control.
+The full 14-support-by-eight-confidence rank surface remains exploratory because its small-gap cells were identified after inspecting the registered grid. No pointwise interval from a selected boundary cell is used as confirmatory evidence. Machine-readable full surfaces, matching controls, maxDets diagnostics, and DOTA-v2 structural support distances remain in the fixed repository release.
 
-DOTA-v2 contributes no prediction, policy-band, bootstrap, or rank record. Its vehicle quadrilaterals are converted to axis-aligned horizontal-box proxies solely to make the structural distribution in Fig.~\ref{fig:controls}(b) inspectable. The display shows that a normalized support coordinate can still have source-dependent distributions; it is neither a performance result nor a data-quality score.
+\section{Ancillary Qualification Controls}
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=.98\textwidth]{../figures/fig_supplement_coverage_cap.pdf}
+\caption{Ancillary qualification records. (a)--(c) AI-TOD covered and noncovered image groups differ in density and support; vertical lines mark 24 px and .015. ECDFs in (b) and (c) use individual vehicle boxes. (d) Fractions of the 548 common VisDrone images whose mapped prediction counts exceed maxDets 100 or 300. At maxDets 2000, all five fractions are zero.}\label{fig:supp-qualification}
+\end{figure*}
+
+Figure~\ref{fig:supp-qualification} separates two boundary checks that precede metric interpretation. The AI-TOD density gap is visible at the image level, while the box-level curves show that coverage selection also changes the support composition of the observed target. The cap panel uses mapped vehicle predictions before AP truncation: a low cap would modify the prediction set for every configuration by a different amount. The registered cap of 2,000 exceeds the observed per-image maximum of 1,881 and therefore preserves every mapped prediction.
 
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=.98\textwidth]{../figures/fig_supplement_controls_structural.pdf}
-\caption{Ancillary controls. (a) Fraction of the 548 covered VisDrone images whose mapped vehicle predictions exceed the AP terminal cap; at \texttt{maxDets}=2000, no configuration is truncated and the maximum count is 1,881. (b) Equal-box-weight empirical 1-Wasserstein distances on corrected normalized support $\max(w/W,h/H)$; DOTA-v2 is represented by horizontal-box proxies for this structural display only.}\label{fig:controls}
+\includegraphics[width=.86\textwidth]{../figures/fig_supplement_structural_distance.pdf}
+\caption{Pairwise empirical Wasserstein distances for full-annotation vehicle support. (a) Absolute max side is scale covariant. (b) Normalized max side is resize invariant but retains nonzero source distances. DOTA-v2 is structural-only evidence and does not enter prediction-conditioned metric or rank claims.}\label{fig:supp-distance}
 \end{figure*}
 
-\begin{table*}[!t]
-\centering
-\caption{Ancillary controls and their claim boundary.}\label{tab:controls}
-\small
-\setlength{\tabcolsep}{3.6pt}
-\renewcommand{\arraystretch}{1.08}
-\begin{tabular}{p{.19\textwidth}p{.31\textwidth}p{.38\textwidth}}
-\toprule
-Control & Observed record & Claim boundary\\
-\midrule
-Greedy--Hungarian & 24/24 matching rankings agree; max $|\Delta F_1|=.00546$. & Matching-semantic check on a legacy cache subset.\\
-Prediction cap & At 2,000, 0/548 images are truncated for all five final-pool configurations. & AP terminal-cap contract; not a main $F_1$ outcome.\\
-Full surface & 112 cells, three winners, 11 complete orders. & Finite sensitivity map; not a global leaderboard.\\
-\bottomrule
-\end{tabular}
-\end{table*}
+Figure~\ref{fig:supp-distance} provides the structural context omitted from the main figures. Normalization changes the coordinate system and greatly compresses the numerical scale, but it does not collapse the four empirical distributions. In particular, the largest normalized pairwise distance is .031 between VisDrone and AI-TOD, whereas VisDrone and DOTA-v2 differ by .006. These are distributional distances, not annotation-quality scores, and no detector result is inferred from them.
 
-\section{Reproducibility}
-
-\begin{table*}[!t]
+\begin{figure*}[!t]
 \centering
-\caption{Released audit records and minimal replay order.}\label{tab:repro}
-\small
-\setlength{\tabcolsep}{3.5pt}
-\renewcommand{\arraystretch}{1.07}
-\begin{tabular}{p{.20\textwidth}p{.70\textwidth}}
+\includegraphics[width=.96\textwidth]{../figures/fig_supplement_contract_summary.pdf}
+\caption{Cross-source summary of the registered headline path. (a) Four-contract micro-$F_1$ ranges. (b) Adjacent path changes, preserving the registered order rather than treating them as order-free causal components. Normalized .015 reduces the range in all three sources but leaves source-dependent residual sensitivity.}\label{fig:supp-contract}
+\end{figure*}
+
+\section{Reproducibility Record}
+\begin{table}[!t]
+\centering
+\caption{Minimal replay chain in the released repository.}\label{tab:repro}
+\scriptsize
+\setlength{\tabcolsep}{2.0pt}\renewcommand{\arraystretch}{1.03}
+\begin{tabular}{p{.22\columnwidth}p{.70\columnwidth}}
 \toprule
-Record & Released location or operation\\
+Audit object & Released record or script\\
 \midrule
-Support denominator & \texttt{source\_common\_intersection.csv} under \texttt{outputs/coverage/}\\
-Support coordinates & \texttt{box\_scale\_records.parquet} under \texttt{outputs/scale/}\\
-Five-pool rule grid & \texttt{metrics\_long.parquet} in the released V4 VisDrone grid directory\\
-Three-source headline & \texttt{three\_source\_policy\_endpoints.csv} in the released three-source directory\\
-Policy endpoints & \texttt{headline\_policy\_bands.csv} in the same V4 directory\\
-Paired bootstrap & \texttt{bootstrap\_controlled\_visdrone\_rank\_pairs.csv} in the statistics directory\\
-Cap audit & \texttt{cap\_sufficiency\_table.csv} under \texttt{outputs/cap\_sufficiency/}\\
-Figure replay & \texttt{scripts/build\_*.py}; run the support-definition test before regeneration\\
+Coverage gate & \texttt{outputs/coverage\_qualification/} and \texttt{evaluate\_aitod\_coverage\_qualification.py}\\
+Support denominator & \texttt{outputs/scale/box\_scale\_records.parquet} and raw-coverage manifests\\
+Contract path & \texttt{outputs/contract\_path/}, \texttt{contract\_path.py}, and \texttt{evaluate\_contract\_path\_headlines.py}\\
+Metric-qualified rank & \texttt{outputs/metric\_qualified\_rank/} and \texttt{evaluate\_metric\_qualified\_visdrone\_rank.py}\\
+Figures and tests & Three \texttt{build\_*.py} scripts; contract, support, matching, and AP regression tests\\
 Repository & \url{https://github.com/Marchematics/aerial-evaluation-audit}\\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}
 
-The data-free repository supplies configuration manifests, derived records, figure-source scripts, and checksums. Licensed imagery, trained weights, and raw prediction caches remain referenced by manifest path and hash rather than redistributed. A minimal replay is: verify the support definition; inspect raw coverage and the fixed candidate registry; regenerate the support and policy figures from the named records; then reproduce selected paired bootstrap rows. This sequence preserves the separation between observed artifact facts, evaluator controls, and the scoped common-coverage rank conclusion.
+The data-free release provides configurations, derived records, scripts, and SHA-256 checksums. Licensed imagery, trained weights, and raw prediction caches remain external and are referenced by manifest path and hash. Reproduction order is coverage $\rightarrow$ support $\rightarrow$ contract endpoints/ledger $\rightarrow$ paired metric qualification $\rightarrow$ figures.
 
 \end{document}

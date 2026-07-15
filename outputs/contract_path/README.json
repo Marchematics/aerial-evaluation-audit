@@ -1,0 +1,21 @@
+{
+  "contracts": [
+    "A",
+    "F",
+    "R",
+    "S"
+  ],
+  "path": "A->F->R->S",
+  "transitions": {
+    "A->F": "target filtering / removed objects as background",
+    "F->R": "removed valid objects become neutral ignore",
+    "R->S": "source-provided ignore regions added"
+  },
+  "confidence": 0.25,
+  "iou": 0.25,
+  "ignore_overlap": "intersection_over_prediction_area_ge_0.5",
+  "matching": "score_ordered_valid_gt_first",
+  "endpoint_rows": 24,
+  "ledger_rows": 18,
+  "path_identity_max_abs_error": 0.0
+}

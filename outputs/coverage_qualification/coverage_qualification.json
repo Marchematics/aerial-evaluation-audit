@@ -1,0 +1,24 @@
+{
+  "source": "AI-TOD",
+  "denominator_images": 2804,
+  "covered_images": 1869,
+  "coverage_fraction": 0.6665477888730386,
+  "qualification": {
+    "support_diagnosis": "pass",
+    "covered_subset_metric_replay": "conditional_only",
+    "full_benchmark_metric": "fail",
+    "full_benchmark_rank": "fail"
+  },
+  "reason": "registered prediction coverage is incomplete and support-selective",
+  "no_extrapolation": true,
+  "covered_boxes": 16900,
+  "not_covered_boxes": 43004,
+  "headline_full_retention": {
+    "absolute_24": 0.0965377938034188,
+    "normalized_015": 0.810012686965812
+  },
+  "headline_covered_retention": {
+    "absolute_24": 0.12029585798816568,
+    "normalized_015": 0.5534319526627219
+  }
+}
