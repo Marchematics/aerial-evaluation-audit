@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Evaluate the registered A→F→R→S contract path on three sources.
+"""Evaluate the declared A→F→R→S contract path on three sources.
 
 One frozen baseline prediction artifact is replayed per source at the two
 headline support rules.  The script emits exact endpoints, per-image counts,
 and an adjacent-step TP/FP/FN ledger.  AI-TOD rows remain explicitly
-conditioned on the images present in its registered prediction artifact.
+conditioned on the images present in its frozen prediction artifact.
 """
 from __future__ import annotations
 

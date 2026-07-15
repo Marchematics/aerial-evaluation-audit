@@ -3,8 +3,8 @@
 
 The endpoint contract is ``S`` (filtered target, removed-object ignore, and
 source-ignore enabled).  Point estimates cover all five common-coverage
-configurations.  The registered Y11m--ASD pair is then evaluated with paired
-image and filename-sequence bootstrap for F1@.25, max-F1 over the registered
+configurations.  The declared Y11m--ASD pair is then evaluated with paired
+image and filename-sequence bootstrap for F1@.25, max-F1 over the prespecified
 confidence grid, and AP50.  AP is recomputed from globally pooled detections in
 each replicate rather than averaged over images or sequences.
 """
@@ -324,7 +324,7 @@ def main() -> None:
                                     "max_dets": MAX_DETS, "iou": AP_IOU})
     crosscheck = pd.DataFrame(crosscheck_rows)
     if not crosscheck["pass"].all():
-        raise AssertionError("custom AP50 and COCOeval differ beyond the registered tolerance")
+        raise AssertionError("custom AP50 and COCOeval differ beyond the prespecified tolerance")
 
     rng = np.random.default_rng(args.seed)
     bootstrap_rows: list[dict] = []

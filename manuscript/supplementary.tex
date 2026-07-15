@@ -153,7 +153,7 @@ Fixed- and optimized-confidence $F_1$ favor Y11m at both localization thresholds
 
 The AP cap is 2,000 detections per image. The observed maximum is 1,881, so no pool image is truncated; caps of 100 and 300 alter dense-image inputs. The independent AP implementation and COCOeval agree exactly for AP50 (maximum absolute difference $<10^{-12}$). AP25 keeps the $S$-contract neutralization threshold fixed at .5, whereas COCOeval couples crowd matching to the evaluated IoU; COCOeval equivalence is therefore not asserted for that deliberately controlled cell. A threshold-first Hungarian replay selects the same top configuration as greedy matching in 24/24 settings; the maximum absolute $F_1$ difference is .00546.
 
-The full 14-support-by-eight-confidence rank surface remains exploratory because its small-gap cells were identified after inspecting the registered grid. No pointwise interval from a selected boundary cell is used as confirmatory evidence. Machine-readable full surfaces, matching controls, maxDets diagnostics, and DOTA-v2 structural support distances remain in the fixed repository release.
+The full 14-support-by-eight-confidence rank surface remains exploratory because its small-gap cells were identified after inspecting the prespecified grid. No pointwise interval from a selected boundary cell is used as confirmatory evidence. Machine-readable full surfaces, matching controls, maxDets diagnostics, and DOTA-v2 structural support distances remain in the fixed repository release.
 
 \section{Ancillary Qualification Controls}
 \begin{figure*}[!t]
@@ -162,7 +162,7 @@ The full 14-support-by-eight-confidence rank surface remains exploratory because
 \caption{Ancillary qualification records. (a)--(c) AI-TOD covered and noncovered image groups differ in density and support; vertical lines mark 24 px and .015. ECDFs in (b) and (c) use individual vehicle boxes. (d) Fractions of the 548 common VisDrone images whose mapped prediction counts exceed maxDets 100 or 300. At maxDets 2000, all five fractions are zero.}\label{fig:supp-qualification}
 \end{figure*}
 
-Figure~\ref{fig:supp-qualification} separates two boundary checks that precede metric interpretation. The AI-TOD density gap is visible at the image level, while the box-level curves show that coverage selection also changes the support composition of the observed target. The cap panel uses mapped vehicle predictions before AP truncation: a low cap would modify the prediction set for every configuration by a different amount. The registered cap of 2,000 exceeds the observed per-image maximum of 1,881 and therefore preserves every mapped prediction.
+Figure~\ref{fig:supp-qualification} separates two boundary checks that precede metric interpretation. The AI-TOD density gap is visible at the image level, while the box-level curves show that coverage selection also changes the support composition of the observed target. The cap panel uses mapped vehicle predictions before AP truncation: a low cap would modify the prediction set for every configuration by a different amount. The declared cap of 2,000 exceeds the observed per-image maximum of 1,881 and therefore preserves every mapped prediction.
 
 \begin{figure*}[!t]
 \centering
@@ -175,7 +175,7 @@ Figure~\ref{fig:supp-distance} provides the structural context omitted from the 
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=.96\textwidth]{../figures/fig_supplement_contract_summary.pdf}
-\caption{Cross-source summary of the registered headline path. (a) Four-contract micro-$F_1$ ranges. (b) Adjacent path changes, preserving the registered order rather than treating them as order-free causal components. Normalized .015 reduces the range in all three sources but leaves source-dependent residual sensitivity.}\label{fig:supp-contract}
+\caption{Cross-source summary of the declared headline path. (a) Four-contract micro-$F_1$ ranges. (b) Adjacent path changes, preserving the declared order rather than treating them as order-free causal components. Normalized .015 reduces the range in all three sources but leaves source-dependent residual sensitivity.}\label{fig:supp-contract}
 \end{figure*}
 
 \section{Reproducibility Record}

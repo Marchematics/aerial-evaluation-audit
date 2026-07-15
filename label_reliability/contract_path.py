@@ -29,7 +29,7 @@ TRANSITIONS = (
 
 @dataclass(frozen=True)
 class ContractRegions:
-    """Valid and neutral regions implied by one registered contract."""
+    """Valid and neutral regions implied by one declared contract."""
 
     valid: np.ndarray
     ignore: np.ndarray
@@ -183,4 +183,3 @@ def micro_f1(tp: np.ndarray | int, fp: np.ndarray | int, fn: np.ndarray | int) -
     denominator = 2 * tp + fp + fn
     value = np.divide(2 * tp, denominator, out=np.zeros_like(denominator, dtype=float), where=denominator > 0)
     return float(value) if value.ndim == 0 else value
-

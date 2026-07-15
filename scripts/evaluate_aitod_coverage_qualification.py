@@ -142,7 +142,7 @@ def main() -> None:
         "coverage_fraction": len(covered_names) / len(gt),
         "qualification": {"support_diagnosis": "pass", "covered_subset_metric_replay": "conditional_only",
                           "full_benchmark_metric": "fail", "full_benchmark_rank": "fail"},
-        "reason": "registered prediction coverage is incomplete and support-selective",
+        "reason": "declared prediction coverage is incomplete and support-selective",
         "no_extrapolation": True,
         "covered_boxes": int(boxes.covered.sum()), "not_covered_boxes": int((~boxes.covered).sum()),
         "headline_full_retention": {

@@ -111,7 +111,7 @@ def main() -> None:
                     # Include-all is independent of support coordinate.
                     include = greedy_match_with_ignores(boxes, valid, np.empty((0, 4)), iou, scores=scores)
                     for mode, thresholds in (("absolute", abss), ("normalized", norms)):
-                        # The registered normalized coordinate is
+                        # The prespecified normalized coordinate is
                         # max(w/W, h/H), not max(w,h)/max(W,H).  Preserve both
                         # box axes so a wide image cannot downweight a tall
                         # object (and vice versa).

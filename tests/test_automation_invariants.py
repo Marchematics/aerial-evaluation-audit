@@ -5,7 +5,7 @@ import pandas as pd
 
 ROOT=Path(__file__).resolve().parents[1]
 
-def test_rule_grid_is_registered():
+def test_rule_grid_is_prespecified():
     text=(ROOT/'configs/locked_rule_grid.yaml').read_text()
     assert 'absolute_threshold_px' in text and 'confidence' in text and 'iou' in text
 
@@ -30,9 +30,9 @@ def test_reference_results_are_scoped():
 def test_reproduction_entrypoint_exists():
     assert (ROOT/'sourceaudit/reproduce.py').exists()
 
-def test_registered_contract_path_is_in_manuscript():
+def test_declared_contract_path_is_in_manuscript():
     tex=(ROOT/'manuscript/final_grsl.tex').read_text()
-    assert 'We register four contracts as ordered pairs' in tex
+    assert 'We declare four contracts as ordered pairs' in tex
     assert '$F$ filters the target' in tex
     assert '$R$ keeps the same filtered target' in tex
     summary=json.loads((ROOT/'outputs/coverage_corrected_grid/summary.json').read_text())
@@ -51,7 +51,7 @@ def test_contract_ledger_closes_path_identity():
         expected=float(end.loc['S','f1']-end.loc['A','f1'])
         assert abs(float(rows.delta_f1.sum())-expected) < 1e-12
 
-def test_metric_rank_bootstrap_and_ap_crosscheck_are_registered():
+def test_metric_rank_bootstrap_and_ap_crosscheck_are_prespecified():
     boot=pd.read_csv(ROOT/'outputs/metric_qualified_rank/paired_bootstrap.csv')
     assert set(boot.resampling_unit)=={'image','sequence'}
     assert set(boot.replicates)=={10000}

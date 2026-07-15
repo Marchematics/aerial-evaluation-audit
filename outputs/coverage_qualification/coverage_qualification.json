@@ -9,7 +9,7 @@
     "full_benchmark_metric": "fail",
     "full_benchmark_rank": "fail"
   },
-  "reason": "registered prediction coverage is incomplete and support-selective",
+  "reason": "declared prediction coverage is incomplete and support-selective",
   "no_extrapolation": true,
   "covered_boxes": 16900,
   "not_covered_boxes": 43004,

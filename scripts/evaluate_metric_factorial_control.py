@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Separate localization and score-integration effects for the Y11m--ASD pair.
 
-The control reuses the two registered VisDrone headline supports and terminal
+The control reuses the two declared VisDrone headline supports and terminal
 contract S.  It crosses IoU in {.25, .50} with threshold-optimized micro-F1
 and score-integrated AP, and retains fixed-confidence F1 at confidence .25 as
 an operational endpoint.  Every pairwise interval resamples the 76 filename-
@@ -363,7 +363,7 @@ def main() -> None:
 
     rng = np.random.default_rng(args.seed)
     unit_count = len(unique_sequences)
-    # Consume the registered image-bootstrap draw first so the sequence draws
+    # Consume the prespecified image-bootstrap draw first so the sequence draws
     # exactly match the existing metric-qualified rank record.
     rng.multinomial(len(names), np.full(len(names), 1 / len(names)), size=args.replicates)
     sampled = rng.multinomial(unit_count, np.full(unit_count, 1 / unit_count), size=args.replicates)
@@ -441,7 +441,7 @@ def main() -> None:
                 })
     crosscheck = pd.DataFrame(crosscheck_rows)
     if not crosscheck["pass"].all():
-        raise AssertionError("custom AP and COCOeval differ beyond the registered tolerance")
+        raise AssertionError("custom AP and COCOeval differ beyond the prespecified tolerance")
 
     pairwise = pd.DataFrame(pairwise_rows)
     OUT.mkdir(parents=True, exist_ok=True)

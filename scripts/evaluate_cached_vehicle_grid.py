@@ -1,4 +1,4 @@
-"""Re-evaluate cached raw prediction boxes under the registered vehicle rule grid."""
+"""Re-evaluate cached raw prediction boxes under the prespecified vehicle rule grid."""
 from __future__ import annotations
 import json, sys, argparse
 from pathlib import Path

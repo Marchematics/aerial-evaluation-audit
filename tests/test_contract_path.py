@@ -9,7 +9,7 @@ from label_reliability.contract_path import (
 )
 
 
-def test_registered_path_changes_one_ignore_source_at_a_time():
+def test_declared_path_changes_one_ignore_source_at_a_time():
     valid = np.array([[0, 0, 10, 10], [20, 0, 30, 10]], float)
     source_ignore = np.array([[40, 0, 50, 10]], float)
     support = np.array([20, 5], float)
@@ -37,7 +37,7 @@ def test_removed_and_source_steps_neutralize_only_unmatched_predictions():
     assert counts["S"] == (1, 0, 0, 2)
 
 
-def test_detection_outcomes_reproduce_count_endpoint_at_both_registered_ious():
+def test_detection_outcomes_reproduce_count_endpoint_at_both_declared_ious():
     valid = np.array([[0, 0, 10, 10], [20, 0, 30, 10]], float)
     source_ignore = np.array([[40, 0, 50, 10]], float)
     support = np.array([20, 5], float)
