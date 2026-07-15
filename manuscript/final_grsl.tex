@@ -72,6 +72,26 @@ We use global micro-$F_1$ at confidence .25 and IoU .25, with score-ordered, val
 \subsection{Common-coverage rank protocol}
 For two configurations $a,b$ and a registered rule $r$, the pairwise margin is $\Delta_{ab}(r)=m_a(r)-m_b(r)$. We evaluate margins only on the common image set and treat exact ties as unstable. The headline comparison fixes policy $N$ and IoU .25. A supplementary 14-threshold-by-eight-confidence sensitivity surface locates finite-grid decision boundaries; it does not extrapolate beyond the declared grid. For headline and observed-boundary cells, a paired bootstrap resamples the 548 images jointly for both configurations 10,000 times and reports the percentile 95\% interval of $\Delta_{ab}$.
 
+\subsection{Formal properties of the audit}
+The two support coordinates deliberately answer different questions. Under isotropic resizing by a factor $\alpha>0$, absolute support becomes $s_a'=\alpha s_a$, whereas
+\begin{equation}
+ s_n'=\max\left(\frac{\alpha w}{\alpha W},\frac{\alpha h}{\alpha H}\right)=s_n.
+\end{equation}
+Thus normalized support is invariant to isotropic image resizing, while a fixed-pixel rule remains tied to the delivered image scale. This property does not make either coordinate universally preferable; it explains why their retained-target fractions must be reported separately.
+
+Common coverage is an identifiability condition rather than a cosmetic balancing choice. If two configurations are observed on different image subsets and their TP, FP, and FN contributions on unobserved images are unconstrained, the observed-subset counts cannot identify their full-population micro-$F_1$ ordering: one completion of the missing images can favor $a$, while another can favor $b$ without changing any observed count. We therefore make no rank statement for incompletely covered AI-TOD.
+
+The deterministic and resampling parts of the rank audit are also distinct. For a finite audited rule set $\mathcal R_h$, define the candidate-level rule band and the reference-winner differential radius as
+\begin{align}
+ B_k(\mathcal R_h)&=\max_{r\in\mathcal R_h}m_k(r)-\min_{r\in\mathcal R_h}m_k(r),\\
+ \Gamma_j(\mathcal R_h)&=\max_{r\in\mathcal R_h}|\Delta_j(r)-\Delta_j(r_0)|,
+\end{align}
+where $k^\star$ wins at $r_0$ and $\Delta_j(r)=m_{k^\star}(r)-m_j(r)$. If $\Delta_j(r_0)>\Gamma_j(\mathcal R_h)$ for every competitor $j$, then $k^\star$ remains the winner throughout $\mathcal R_h$; moreover,
+\begin{equation}
+ \Gamma_j(\mathcal R_h)\leq B_{k^\star}(\mathcal R_h)+B_j(\mathcal R_h).
+\end{equation}
+The certificate concerns a declared finite rule set. The paired bootstrap instead asks whether a selected pairwise advantage is resolved under image resampling. A positive deterministic margin therefore does not substitute for an interval, and a wide candidate-level rule band does not by itself imply a rank reversal.
+
 \section{Results}
 \subsection{Layer 1: Annotation-support mismatch}
 \begin{figure*}[!t]
@@ -91,9 +111,32 @@ The coverage record also decides which sources can progress to the later layers.
 \caption{Controlled support perturbation and metric uncertainty on the five-configuration VisDrone pool. Each vertical span is $B_{F_1}^{\pi}(t)$ for one configuration; colored points are $I$ (blue), $O$ (red), and $N$ (green). (a) Absolute-24-pixel bands span .031--.093. (b) Normalized-.015 bands span .013--.035.}\label{fig:perturbation}
 \end{figure*}
 
+\begin{table*}[!t]
+\centering
+\caption{Exact headline global micro-$F_1$ endpoints and fixed-rule policy bands. Confidence and IoU are .25.}
+\label{tab:endpoints}
+\small
+\setlength{\tabcolsep}{4.1pt}
+\renewcommand{\arraystretch}{1.06}
+\begin{tabular}{lrrrr@{\qquad}rrrr}
+\toprule
+& \multicolumn{4}{c}{Absolute support: 24 px} & \multicolumn{4}{c}{Normalized support: .015}\\
+Configuration & $I$ & $O$ & $N$ & $B_{F_1}^{\pi}$ & $I$ & $O$ & $N$ & $B_{F_1}^{\pi}$\\
+\midrule
+B-640   & .7719 & .7359 & .7438 & .0360 & .7719 & .7897 & .7973 & .0254\\
+B-1280  & .7966 & .7036 & .7261 & .0930 & .7966 & .7774 & .8000 & .0226\\
+Y11m    & .8390 & .8080 & .8181 & .0310 & .8390 & .8643 & .8741 & .0351\\
+ASD     & .8357 & .7599 & .7732 & .0759 & .8357 & .8332 & .8465 & .0133\\
+Y11n-P2 & .8173 & .7473 & .7601 & .0699 & .8173 & .8141 & .8267 & .0126\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 The controlled perturbation makes the score response interpretable. At 24 pixels, $F_1$ policy bands range from .031 (Y11m) to .093 (B-1280); at .015, they range from .013 (Y11n-P2) to .035 (Y11m). Filtering can raise or lower a score because it changes the valid target and the treatment of unmatched predictions. Figure~\ref{fig:perturbation} therefore reports uncertainty of the evaluation contract, rather than attributing a policy-sensitive score to an unobserved annotation-error mechanism.
 
 The $O$--$N$ comparison isolates source-ignore handling at the same filtered target. At 24 pixels, enabling valid-first source-ignore neutralization moves $F_1$ by .008--.022 across the five configurations. The larger $I$--filtered separations in Fig.~\ref{fig:perturbation} show why the support rule and removed-object treatment must be stated together: a single endpoint alone cannot reveal which evaluative change produced it.
+
+Table~\ref{tab:endpoints} makes the direction of that response explicit. Under the 24-pixel rule, every $N$ endpoint is below its corresponding $I$ endpoint; under normalized .015, every $N$ endpoint is above $I$. Because the prediction artifacts are unchanged, this sign change cannot be interpreted as a detector improvement or degradation. It is the joint consequence of a different retained target and the declared treatment of unmatched predictions. The $O$--$N$ separation then identifies the smaller component attributable specifically to source-ignore neutralization at the same filtered target.
 
 \subsection{Layer 3: Rank robustness on common coverage}
 \begin{figure}[!t]
@@ -129,6 +172,10 @@ B-a: 64 px, .35 & B-640--Y11m & .00095 & [$-.00492$,.00677]\\
 \section{Discussion and Reproducibility}
 The audit turns an evaluation question into a traceable sequence. First report how much annotation support remains; then expose how an explicit target/ignore perturbation moves the metric; finally state whether a frozen configuration-pool conclusion persists on common coverage and under paired uncertainty. This sequence separates target drift from metric sensitivity and from a model comparison.
 
+The three numerical objects have different estimands. $\rho_s(t)$ is a pooled box-level property of the mapped annotations and is computed before prediction matching. $B_m^{\pi}(t)$ is a deterministic range over three declared evaluator policies for one fixed prediction artifact; it is not a confidence interval. $\Delta_{ab}(r)$ is a pairwise difference on a named common image set, while its bootstrap interval uses images, not boxes, as the resampling unit. Reporting them in one record prevents a large support shift from being described as statistical uncertainty and prevents an image-level interval from being generalized to unobserved images or configurations.
+
+This separation yields an operational interpretation. First, a result is \emph{target-sensitive} when its retained-support denominator changes materially. Second, it is \emph{contract-sensitive} when the policy band is non-negligible relative to the scientific comparison. Third, a model conclusion is \emph{resolved on common coverage} only when the candidate pair uses the same image universe and the paired interval supports the stated direction. These labels are cumulative: a comparison may be target- and contract-sensitive while still having a resolved pairwise margin, as the two headline Y11m--ASD records demonstrate.
+
 For a compact comparison record, the three layers translate into three released objects: a source-level retained-support curve with the raw coverage denominator; a candidate-level table of policy endpoints and $B_m^{\pi}(t)$; and a pairwise common-coverage record containing the rule, point margin, resampling unit, and interval. These objects can accompany a conventional AP or $F_1$ table without altering a detector. They identify whether an apparent gain follows a changed target, a changed contract, or a reproducible candidate difference.
 
 \begin{table}[!t]
@@ -149,6 +196,8 @@ Rank & Common image set, pairwise $\Delta_{ab}$, resampling unit, and interval: 
 \end{table}
 
 The record is deliberately ordered. Support can be measured from annotations before predictions are replayed; metric uncertainty then holds a prediction artifact fixed while the contract changes; rank evidence is finally meaningful only after the compared configurations share the same image universe. This ordering gives a reviewer or downstream user a direct path from a plotted score to the target and comparison on which it rests.
+
+The scope follows directly from those denominators. AI-TOD establishes a strong support mismatch but not a rank comparison because 935 of 2,804 images lack raw prediction coverage and the missing subset is structurally denser than the covered subset. The five VisDrone configurations support a within-pool conclusion on 548 shared images, not a detector-family leaderboard. Likewise, the finite threshold grid locates observed decision boundaries but does not certify rules outside that grid. These are properties of the estimand, rather than post hoc exclusions: widening the claim would require new common-coverage artifacts or an explicit model for the missing outcomes.
 
 The supplementary material contains the complementary controls: full sensitivity surfaces, greedy--Hungarian matching checks, AP cap-contract checks, and structural DOTA-v2 evidence. These controls test evaluator boundaries without enlarging the central common-coverage rank claim. Code, configurations, derived evaluation records, figure-source tables, and checksums are available at \url{https://github.com/Marchematics/aerial-evaluation-audit}; licensed imagery and raw prediction artifacts remain referenced by manifest and hash.
 
