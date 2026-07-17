@@ -1,0 +1,65 @@
+version: 1
+status: frozen_before_extension_replay
+frozen_at_utc: "2026-07-17T08:53:06Z"
+public_parent_commit: 491a04e6521d9295559dd3249941246c46a871e3
+scope: >-
+  This record freezes the requested extension analyses before their replay on
+  17 July 2026. It is a reproducibility freeze, not a prospective
+  preregistration. The named pair, headline supports, and 2-by-2 metric design
+  appeared in the earlier public release and were informed by prior audits.
+
+inputs:
+  candidate_config:
+    path: configs/resubmission_visdrone_controlled_pool.yaml
+    sha256: 52644d654a83770b355bce018296f1f8e390f2e553b33e90fa409df24386801b
+  prediction_manifest:
+    path: outputs/candidates/prediction_manifest_v2.csv
+    sha256: f5e9e2959c0773111bb296f3897617d1c192b0d0c800b7ee97535cd3da6a2952
+
+visdrone_candidate_pool:
+  - visdrone_control_baseline640
+  - visdrone_control_baseline1280
+  - visdrone_control_yolo11m_hf640
+  - visdrone_control_asd1280
+  - visdrone_control_yolo11n_p2_1280
+
+contract_path_extension:
+  candidates: all_five
+  contracts: [A, F, R, S]
+  confidence: 0.25
+  valid_match_iou: 0.25
+  primary_supports:
+    - {coordinate: absolute_max_side, threshold: 24.0}
+    - {coordinate: normalized_max_side, threshold: 0.015}
+
+named_pair_factorial_family:
+  candidate_a: visdrone_control_yolo11m_hf640
+  candidate_b: visdrone_control_asd1280
+  supports:
+    - {coordinate: absolute_max_side, threshold: 24.0}
+    - {coordinate: normalized_max_side, threshold: 0.015}
+  valid_match_ious: [0.25, 0.50]
+  metrics: [max_f1, average_precision]
+  comparisons: 8
+  simultaneous_interval: >-
+    Single-step 95% max-t cluster-bootstrap intervals across the eight
+    comparisons, using the same 10000 paired resamples of 76 filename-derived
+    VisDrone sequences for every endpoint.
+
+alternative_support_robustness:
+  definitions:
+    - minimum_side
+    - geometric_mean_side
+  coordinates: [absolute, normalized]
+  threshold_calibration: >-
+    Ground-truth-only thresholds minimize the absolute difference from the
+    retained valid-GT count of the corresponding max-side headline rule.
+  outputs:
+    - all-five-candidate A-to-F-to-R-to-S paths at confidence 0.25 and IoU 0.25
+    - named-pair 2-by-2 point estimates under terminal contract S
+
+aitod_disposition: >-
+  The incomplete AI-TOD prediction artifact is excluded from the abstract and
+  main metric conclusions. Full-annotation AI-TOD support and coverage
+  qualification remain descriptive; its covered-subset metric replay is
+  supplementary evidence only.
