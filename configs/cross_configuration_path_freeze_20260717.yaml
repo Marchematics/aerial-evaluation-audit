@@ -3,8 +3,8 @@ status: frozen_before_cross_configuration_replay
 frozen_at_utc: "2026-07-17T09:34:40Z"
 scope: >-
   Cross-configuration external-validity control for the A-to-F-to-R-to-S
-  contract path. The analysis uses existing raw prediction caches only and
-  introduces no model selection or training.
+  contract path. The input cohort comprises existing raw prediction caches;
+  candidate selection and evaluator settings remain fixed throughout replay.
 
 evaluation:
   contracts: [A, F, R, S]

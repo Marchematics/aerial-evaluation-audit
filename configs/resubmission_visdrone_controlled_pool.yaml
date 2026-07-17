@@ -10,7 +10,7 @@ shared_vehicle_native_classes: [3, 4, 5, 8]
 support_contract:
   absolute: max(w, h) pixels
   normalized: max(w / W, h / H)
-  note: each box axis is normalized by its corresponding image axis; max(w,h) / max(W,H) is not used
+  note: normalized max side is max(w/W,h/H), using the corresponding image axis for each box axis
 raw_inference:
   confidence_floor: 0.001
   nms_iou: 0.70

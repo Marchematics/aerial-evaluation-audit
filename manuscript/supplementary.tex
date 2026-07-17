@@ -58,7 +58,7 @@ Y11n-P2 & A & $-.0699$ & $+.0922$ & $+.0159$ & $.1080$\\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:cross-config} extends the path beyond one baseline per source. VisDrone contributes five separately materialized artifacts. UAVDT contributes three resolution slices and a tiling configuration. AI-TOD contributes three resolution slices on the same covered subset; these rows test cache-resolution sensitivity without creating a full-benchmark estimand.
+Table~\ref{tab:cross-config} extends the path beyond one baseline per source. VisDrone contributes five separately materialized artifacts. UAVDT contributes three resolution slices and a tiling configuration. AI-TOD contributes three resolution slices on the same covered subset and estimates cache-resolution sensitivity for that 1,869-image population.
 
 \begin{table*}[!t]
 \centering
@@ -83,7 +83,7 @@ AI-TOD$^a$ & A & 3 & $-.5105$--$-.4565$ & $+.1450$--$+.1920$ & $0$ & $.4565$--$.
 Removed-object neutralization is positive in all 24 configuration--rule replays. Source-ignore handling is positive in all ten VisDrone replays and exactly zero for UAVDT and AI-TOD, which have no active source-ignore regions. Target filtering remains configuration dependent, especially under normalized support. The exact 96-row endpoint record and 72-row transition ledger preserve artifact groups and input hashes.
 
 \section{Scene-Stratified Paths and Task Consequences}
-The strata use annotation-only tertiles fixed before metric aggregation. Density includes all 548 images. Target-size and occlusion strata include 519 nonempty images; nearest-neighbor strata include 510 images with at least two vehicles. The density cutpoints are 17 and 37 vehicles/image, target-size cutpoints are 35 and 55 pixels, nearest-neighbor cutpoints are .0326 and .0565, and occlusion-fraction cutpoints are .400 and .593.
+The strata use annotation-derived tertiles fixed before metric aggregation. Density includes all 548 images. Target-size and occlusion strata include 519 nonempty images; nearest-neighbor strata include 510 images with at least two vehicles. The density cutpoints are 17 and 37 vehicles/image, target-size cutpoints are 35 and 55 pixels, nearest-neighbor cutpoints are .0326 and .0565, and occlusion-fraction cutpoints are .400 and .593.
 
 \begin{table*}[!t]
 \centering
@@ -115,7 +115,7 @@ N & Density & Sparse & $-.0021$ & $+.0089$ & $.0273$ & $+.0220$\\
 \end{tabular}
 \end{table*}
 
-Small-target, crowded, and dense scenes concentrate the absolute support response. Normalization attenuates each contrast while preserving the same ordering for target size, neighbor spacing, and density. Occlusion does not show a monotonic path gradient. The Y11m--ASD point difference remains positive in every one of the 24 complete factor--tertile--rule cells.
+Small-target, crowded, and dense scenes concentrate the absolute support response. Normalization attenuates each contrast while preserving the same ordering for target size, neighbor spacing, and density. Occlusion follows a nonmonotonic path gradient. The Y11m--ASD point difference remains positive in every one of the 24 complete factor--tertile--rule cells.
 
 \begin{table}[!t]
 \centering
@@ -137,7 +137,7 @@ N & Y11m & 3.03 & 12.36 & 88.99\\
 The operational record separates false-alarm burden from missed-target burden. Y11m improves both components under 24-pixel support. Under normalized support it produces fewer false alarms and higher review yield, while ASD produces fewer misses per 100 scored vehicles.
 
 \section{Coverage Qualification and Full Support Grid}
-Raw prediction names establish coverage before class filtering. VisDrone and UAVDT cover all declared images. AI-TOD covers 1,869/2,804 images. Its full-annotation support diagnosis uses all 2,804 images, while the ancillary metric replay is confined to the covered subset. The 1,869 covered images contain 16,900 boxes; the 935 noncovered images contain 43,004.
+Raw prediction names establish coverage before class filtering. VisDrone and UAVDT cover all declared images. AI-TOD covers 1,869/2,804 images. Its full-annotation support diagnosis uses all 2,804 images, and the metric replay targets the 1,869-image covered subset. The covered images contain 16,900 boxes; the 935 noncovered images contain 43,004.
 
 \begin{table}[!t]
 \centering
@@ -158,7 +158,7 @@ Nearest distance$^b$ & .031 [.016,.065] & .027 [.018,.055] & $+.029$ & .009\\
 \end{tabular}
 \end{table}
 
-The image-level record shows that incomplete coverage is not exchangeable with the full validation set. The covered subset has many empty vehicle images, yet among nonempty images its per-image support composition also differs. At the box level, covered and noncovered median max sides are 12 and 16 pixels; the normalized-support Wasserstein distance is .00370. No weighting or imputation is used to extrapolate the conditional metric endpoints.
+The image-level record establishes distinct covered-subset and full-validation distributions. The covered subset has many empty vehicle images, and its nonempty images also have a different support composition. At the box level, covered and noncovered median max sides are 12 and 16 pixels; the normalized-support Wasserstein distance is .00370. Metric endpoints target the observed covered-set population.
 
 \begin{table}[!t]
 \centering
@@ -236,15 +236,15 @@ Normalized & max side (.015) & 89.77\% & .034--.049 & $+.0099$ & $-.0005$ & $+.0
 
 The alternative definitions preserve every max-$F_1$ and AP direction in the $2\!\times\!2$ design. Both neutralization steps remain positive in all 30 candidate--rule combinations.
 
-The AP cap is 2,000 detections per image. The observed maximum is 1,881, so no pool image is truncated; caps of 100 and 300 alter dense-image inputs. The independent AP implementation and COCOeval agree exactly for AP50 (maximum absolute difference $<10^{-12}$). AP25 keeps the $S$-contract neutralization threshold fixed at .5, whereas COCOeval couples crowd matching to the evaluated IoU; COCOeval equivalence is therefore not asserted for that deliberately controlled cell. A threshold-first Hungarian replay selects the same top configuration as greedy matching in 24/24 settings; the maximum absolute $F_1$ difference is .00546.
+The AP cap is 2,000 detections per image. The observed maximum is 1,881, placing every pool image below the cap; caps of 100 and 300 alter dense-image inputs. The independent AP implementation and COCOeval agree exactly for AP50 (maximum absolute difference $<10^{-12}$). AP25 keeps the $S$-contract neutralization threshold fixed at .5, whereas COCOeval couples crowd matching to the evaluated IoU; the released controlled implementation supplies the AP25 endpoint. A threshold-first Hungarian replay selects the same top configuration as greedy matching in 24/24 settings; the maximum absolute $F_1$ difference is .00546.
 
-The full 14-support-by-eight-confidence rank surface remains exploratory because its small-gap cells were identified after inspecting the prespecified grid. No pointwise interval from a selected boundary cell is used as confirmatory evidence. Machine-readable full surfaces, matching controls, maxDets diagnostics, and DOTA-v2 structural support distances remain in the fixed repository release.
+The full 14-support-by-eight-confidence rank surface maps the sensitivity boundary. Confirmatory inference uses the eight prespecified named-pair cells and their simultaneous max-$t$ intervals. Machine-readable full surfaces, matching controls, maxDets diagnostics, and DOTA-v2 structural support distances accompany the release.
 
-\section{Ancillary Qualification Controls}
+\section{Coverage and Cap Controls}
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=.98\textwidth]{../figures/fig_supplement_coverage_cap.pdf}
-\caption{Ancillary qualification records. (a)--(c) AI-TOD covered and noncovered image groups differ in density and support; vertical lines mark 24 px and .015. ECDFs in (b) and (c) use individual vehicle boxes. (d) Fractions of the 548 common VisDrone images whose mapped prediction counts exceed maxDets 100 or 300. At maxDets 2000, all five fractions are zero.}\label{fig:supp-qualification}
+\caption{Coverage and cap qualification records. (a)--(c) AI-TOD covered and noncovered image groups differ in density and support; vertical lines mark 24 px and .015. ECDFs in (b) and (c) use individual vehicle boxes. (d) Fractions of the 548 common VisDrone images whose mapped prediction counts exceed maxDets 100 or 300. At maxDets 2000, all five fractions are zero.}\label{fig:supp-qualification}
 \end{figure*}
 
 Figure~\ref{fig:supp-qualification} separates two boundary checks that precede metric interpretation. The AI-TOD density gap is visible at the image level, while the box-level curves show that coverage selection also changes the support composition of the observed target. The cap panel uses mapped vehicle predictions before AP truncation: a low cap would modify the prediction set for every configuration by a different amount. The declared cap of 2,000 exceeds the observed per-image maximum of 1,881 and therefore preserves every mapped prediction.
@@ -252,15 +252,15 @@ Figure~\ref{fig:supp-qualification} separates two boundary checks that precede m
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=.86\textwidth]{../figures/fig_supplement_structural_distance.pdf}
-\caption{Pairwise empirical Wasserstein distances for full-annotation vehicle support. (a) Absolute max side is scale covariant. (b) Normalized max side is resize invariant but retains nonzero source distances. DOTA-v2 is structural-only evidence and does not enter prediction-conditioned metric or rank claims.}\label{fig:supp-distance}
+\caption{Pairwise empirical Wasserstein distances for full-annotation vehicle support. (a) Absolute max side is scale covariant. (b) Normalized max side is resize invariant and retains nonzero source distances. DOTA-v2 supplies structural evidence; prediction-conditioned metrics and ranks use sources with available prediction artifacts.}\label{fig:supp-distance}
 \end{figure*}
 
-Figure~\ref{fig:supp-distance} provides the structural context omitted from the main figures. Normalization changes the coordinate system and greatly compresses the numerical scale, but it does not collapse the four empirical distributions. In particular, the largest normalized pairwise distance is .031 between VisDrone and AI-TOD, whereas VisDrone and DOTA-v2 differ by .006. These are distributional distances, not annotation-quality scores, and no detector result is inferred from them.
+Figure~\ref{fig:supp-distance} provides the structural context summarized outside the main figures. Normalization changes the coordinate system, compresses the numerical scale, and retains four distinct empirical distributions. The largest normalized pairwise distance is .031 between VisDrone and AI-TOD, whereas VisDrone and DOTA-v2 differ by .006. These values quantify distributional support differences.
 
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=.96\textwidth]{../figures/fig_supplement_contract_summary.pdf}
-\caption{Cross-source summary of the declared headline path. (a) Four-contract micro-$F_1$ ranges. (b) Adjacent path changes, preserving the declared order rather than treating them as order-free causal components. Normalized .015 reduces the range in all three sources but leaves source-dependent residual sensitivity.}\label{fig:supp-contract}
+\caption{Cross-source summary of the declared headline path. (a) Four-contract micro-$F_1$ ranges. (b) Adjacent path changes along the declared evaluation order. Normalized .015 reduces the range in all three sources and retains source-dependent residual sensitivity.}\label{fig:supp-contract}
 \end{figure*}
 
 \section{Reproducibility Record}

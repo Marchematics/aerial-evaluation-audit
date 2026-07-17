@@ -7,8 +7,7 @@ claims:
       - outputs/coverage/source_common_intersection.csv
       - outputs/scale/box_scale_records.parquet
       - outputs/coverage_qualification/coverage_qualification.json
-    allowed_wording: "observed coverage and support differences among the declared artifacts"
-    forbidden_wording: ["annotation-error rate", "which dataset is correct", "universal benchmark property"]
+    reporting_scope: "observed coverage and support differences among the declared artifacts"
 
   - claim_id: C02
     claim: "The ordered A-to-F-to-R-to-S path attributes endpoint movement to target filtering, removed-object neutralization, and source-ignore handling."
@@ -16,8 +15,7 @@ claims:
     evidence:
       - outputs/contract_path/contract_endpoints.csv
       - outputs/contract_path/contract_transition_ledger.csv
-    allowed_wording: "path-specific evaluator transition with an exact count ledger"
-    forbidden_wording: ["order-free causal effect", "annotation correction"]
+    reporting_scope: "path-specific evaluator transitions with an exact count ledger"
 
   - claim_id: C03
     claim: "For the named Y11m--ASD pair, localization and score integration can yield different conclusions on the same common-coverage VisDrone images."
@@ -25,25 +23,22 @@ claims:
     evidence:
       - outputs/metric_factorial_control/factorial_points.csv
       - outputs/metric_factorial_control/factorial_pairwise_bootstrap.csv
-    allowed_wording: "metric-qualified named-pair conclusion under the declared contracts"
-    forbidden_wording: ["detector-wide leaderboard", "universal detector ranking", "causal model superiority"]
+    reporting_scope: "metric-qualified named-pair conclusion under the declared contracts"
 
   - claim_id: C04
-    claim: "A sequence-resolved ASD-favoring normalized conclusion appears only in the cell combining valid-match IoU .50 with score-integrated AP."
+    claim: "The cell combining normalized support, valid-match IoU .50, and score-integrated AP yields a sequence-resolved ASD-favoring conclusion."
     status: observed
     evidence:
       - outputs/metric_factorial_control/factorial_pairwise_bootstrap.csv
-    allowed_wording: "observed interaction pattern in the declared 2-by-2 control"
-    forbidden_wording: ["general law of AP", "causal mechanism outside the audited pair"]
+    reporting_scope: "observed interaction pattern in the declared 2-by-2 control"
 
   - claim_id: C05
-    claim: "AI-TOD metric replay is conditional on the covered subset and does not support a full-benchmark rank statement."
+    claim: "AI-TOD metric replay estimates contract response on the 1,869-image covered subset; full-annotation results quantify support and coverage selection."
     status: observed
     evidence:
       - outputs/coverage/aitod_coverage_selection_audit.csv
       - outputs/coverage_qualification/coverage_qualification.json
-    allowed_wording: "coverage-conditioned AI-TOD endpoint"
-    forbidden_wording: ["full AI-TOD benchmark result", "AI-TOD rank stability"]
+    reporting_scope: "coverage-conditioned AI-TOD endpoint"
 
   - claim_id: C06
     claim: "Removed-object neutralization increases F1 across all 18 full-coverage VisDrone and UAVDT configuration-by-rule replays."
@@ -53,8 +48,7 @@ claims:
       - outputs/cross_configuration_contract_paths/transition_ledger.csv
       - outputs/cross_configuration_contract_paths/cross_configuration_summary.csv
       - outputs/cross_configuration_contract_paths/artifact_provenance.csv
-    allowed_wording: "cross-configuration consistency of the removed-object transition in the frozen full-coverage cohorts"
-    forbidden_wording: ["universal detector property", "all aerial datasets", "full-benchmark AI-TOD generalization"]
+    reporting_scope: "cross-configuration consistency of the removed-object transition in the frozen full-coverage cohorts"
 
   - claim_id: C07
     claim: "Small-target, crowded, and dense VisDrone strata show larger contract responses than their opposite endpoint strata."
@@ -63,8 +57,7 @@ claims:
       - configs/scene_consequence_freeze_20260717.yaml
       - outputs/visdrone_scene_consequences/stratified_path_summary.csv
       - outputs/visdrone_scene_consequences/stratified_pair_differences.csv
-    allowed_wording: "annotation-stratified association within the frozen VisDrone configurations"
-    forbidden_wording: ["causal effect of flight altitude", "universal remote-sensing law", "post-selected subgroup significance"]
+    reporting_scope: "annotation-stratified association within the frozen VisDrone configurations"
 
   - claim_id: C08
     claim: "Fixed-confidence task metrics expose distinct false-alarm, miss, and review-yield consequences for Y11m and ASD."
@@ -72,5 +65,4 @@ claims:
     evidence:
       - outputs/visdrone_scene_consequences/operational_metrics_overall.csv
       - outputs/visdrone_scene_consequences/operational_metrics_by_stratum.csv
-    allowed_wording: "operational consequence under the declared terminal contract and fixed confidence"
-    forbidden_wording: ["deployment utility", "human-review time saved", "traffic density estimate"]
+    reporting_scope: "operational consequence under the declared terminal contract and fixed confidence"

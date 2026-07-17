@@ -19,5 +19,5 @@
   "common_images_per_candidate": 548,
   "base_record": "outputs/resubmission_controlled_pool/visdrone_grid_crowd_v3/metrics_long.parquet",
   "extension_record": "outputs/resubmission_controlled_pool/visdrone_grid_crowd_v4_p2_extension/metrics_long.parquet",
-  "assembly_rule": "candidate-independent F1 records were concatenated only after schema, contract, coverage, and complete-grid checks"
+  "assembly_rule": "candidate-independent F1 records were concatenated following schema, contract, coverage, and complete-grid checks"
 }

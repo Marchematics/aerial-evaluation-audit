@@ -2,9 +2,9 @@ version: 1
 status: frozen_before_scene_stratified_analysis
 frozen_at_utc: "2026-07-17T09:48:52Z"
 scope: >-
-  Annotation-only VisDrone scene strata and operational consequence metrics
-  for the already frozen five-configuration path cohort. No model selection,
-  threshold search, or training is introduced.
+  Annotation-derived VisDrone scene strata and operational consequence metrics
+  for the frozen five-configuration path cohort. Candidate selection, support
+  thresholds, and evaluator settings remain fixed throughout aggregation.
 
 source: VisDrone2019-DET validation
 configurations: [B-640, B-1280, Y11m, ASD, Y11n-P2]

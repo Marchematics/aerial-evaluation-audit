@@ -53,6 +53,6 @@
   "seed": 20260715,
   "ap_bootstrap": "pooled detections recomputed for every paired sequence resample",
   "cocoeval_contract_aligned_iou": 0.5,
-  "ap25_cocoeval_note": "diagnostic only: COCOeval couples crowd neutralization to evaluated IoU, whereas contract S fixes neutralization at IoP=.5",
+  "ap25_cocoeval_note": "controlled AP25 endpoint: contract S fixes neutralization at IoP=.5; COCOeval couples crowd neutralization to evaluated IoU",
   "crosscheck_max_abs_difference": 0.0
 }

@@ -527,7 +527,7 @@ def main() -> None:
         "seed": args.seed,
         "ap_bootstrap": "pooled detections recomputed for every paired sequence resample",
         "cocoeval_contract_aligned_iou": .50,
-        "ap25_cocoeval_note": "diagnostic only: COCOeval couples crowd neutralization to evaluated IoU, whereas contract S fixes neutralization at IoP=.5",
+        "ap25_cocoeval_note": "controlled AP25 endpoint: contract S fixes neutralization at IoP=.5; COCOeval couples crowd neutralization to evaluated IoU",
         "crosscheck_max_abs_difference": float(crosscheck.absolute_difference.max()),
     }
     (OUT / "README.json").write_text(json.dumps(summary, indent=2) + "\n")

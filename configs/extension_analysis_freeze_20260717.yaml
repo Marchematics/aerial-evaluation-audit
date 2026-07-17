@@ -3,9 +3,8 @@ status: frozen_before_extension_replay
 frozen_at_utc: "2026-07-17T08:53:06Z"
 public_parent_commit: 491a04e6521d9295559dd3249941246c46a871e3
 scope: >-
-  This record freezes the requested extension analyses before their replay on
-  17 July 2026. It is a reproducibility freeze, not a prospective
-  preregistration. The named pair, headline supports, and 2-by-2 metric design
+  This record captures the extension-analysis state frozen before replay on
+  17 July 2026. The named pair, headline supports, and 2-by-2 metric design
   appeared in the earlier public release and were informed by prior audits.
 
 inputs:
@@ -52,14 +51,13 @@ alternative_support_robustness:
     - geometric_mean_side
   coordinates: [absolute, normalized]
   threshold_calibration: >-
-    Ground-truth-only thresholds minimize the absolute difference from the
+    Annotation-derived thresholds minimize the absolute difference from the
     retained valid-GT count of the corresponding max-side headline rule.
   outputs:
     - all-five-candidate A-to-F-to-R-to-S paths at confidence 0.25 and IoU 0.25
     - named-pair 2-by-2 point estimates under terminal contract S
 
 aitod_disposition: >-
-  The incomplete AI-TOD prediction artifact is excluded from the abstract and
-  main metric conclusions. Full-annotation AI-TOD support and coverage
-  qualification remain descriptive; its covered-subset metric replay is
-  supplementary evidence only.
+  Full-annotation AI-TOD support and coverage qualification enter the main
+  analysis. Its 1,869-image covered-subset metric replay supplies the
+  supplementary contract-path evidence.

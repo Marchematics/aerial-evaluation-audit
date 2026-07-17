@@ -19,8 +19,9 @@ def test_structural_pairs_are_not_quality_scores():
     n = d.source_a.nunique()
     assert len(d)==n*n and n >= 3 and 'comparison_boundary' in d
 
-def test_claim_registry_has_forbidden_wording():
-    assert 'forbidden_wording' in (ROOT/'configs/CLAIM_REGISTRY.yaml').read_text()
+def test_claim_registry_has_reporting_scope():
+    text = (ROOT/'configs/CLAIM_REGISTRY.yaml').read_text()
+    assert text.count('reporting_scope:') == 8
 
 def test_reference_results_are_scoped():
     d=pd.read_parquet(ROOT/'outputs/rule_grid_reference/metrics_long.parquet')

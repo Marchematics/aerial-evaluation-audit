@@ -51,7 +51,7 @@
     "tiny_max_side_px": 16,
     "small_max_side_px": 24,
     "main_comparison_level": "coarse",
-    "fine_level_rule": "Report fine classes only where both source definitions and support are defensible.",
-    "vlm_rule": "VLMs may propose boxes for review but must not create accepted labels without human adjudication."
+    "fine_level_rule": "Report fine classes when source definitions and support align.",
+    "vlm_rule": "VLM proposals enter human adjudication; accepted labels require human approval."
   }
 }
