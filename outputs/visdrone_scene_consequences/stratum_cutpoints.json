@@ -1,0 +1,50 @@
+{
+  "density": {
+    "feature": "density",
+    "method": "value_tertiles",
+    "lower_cutpoint": 17.0,
+    "upper_cutpoint": 37.0,
+    "eligible_images": 548,
+    "stratum_counts": {
+      "sparse": 187,
+      "moderate": 180,
+      "dense": 181
+    }
+  },
+  "target_size": {
+    "feature": "median_target_side_px",
+    "method": "value_tertiles",
+    "lower_cutpoint": 35.0,
+    "upper_cutpoint": 55.0,
+    "eligible_images": 519,
+    "stratum_counts": {
+      "small": 178,
+      "medium": 173,
+      "large": 168
+    }
+  },
+  "nearest_neighbor": {
+    "feature": "median_normalized_nearest_neighbor",
+    "method": "value_tertiles",
+    "lower_cutpoint": 0.032644876964216835,
+    "upper_cutpoint": 0.056545953548623545,
+    "eligible_images": 510,
+    "stratum_counts": {
+      "crowded": 170,
+      "intermediate": 170,
+      "dispersed": 170
+    }
+  },
+  "occlusion": {
+    "feature": "occluded_fraction",
+    "method": "value_tertiles",
+    "lower_cutpoint": 0.4,
+    "upper_cutpoint": 0.5925925925925926,
+    "eligible_images": 519,
+    "stratum_counts": {
+      "low": 181,
+      "middle": 166,
+      "high": 172
+    }
+  }
+}

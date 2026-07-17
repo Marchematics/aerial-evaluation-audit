@@ -1,0 +1,19 @@
+{
+  "freeze_record": "configs/scene_consequence_freeze_20260717.yaml",
+  "images": 548,
+  "configurations": 5,
+  "stratifiers": [
+    "density",
+    "target_size",
+    "nearest_neighbor",
+    "occlusion"
+  ],
+  "path_rules": 2,
+  "path_stratum_rows": 120,
+  "pair_stratum_rows": 24,
+  "operational_definition": {
+    "false_positives_per_image": "FP divided by images at terminal S and confidence .25",
+    "false_negatives_per_100_scored_vehicles": "100*FN divided by scored GT at terminal S",
+    "confirmed_vehicles_per_100_scored_alerts": "100*TP divided by TP+FP after contract neutralization"
+  }
+}

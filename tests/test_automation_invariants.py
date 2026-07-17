@@ -99,3 +99,15 @@ def test_cross_configuration_contract_path_closes_and_repeats():
     assert len(removed)==24
     assert (removed.delta_f1>0).all()
     assert len(removed[~removed.coverage_conditioned])==18
+
+def test_scene_strata_and_operational_consequences_are_complete():
+    root=ROOT/'outputs/visdrone_scene_consequences'
+    summary=pd.read_csv(root/'stratified_path_summary.csv')
+    pair=pd.read_csv(root/'stratified_pair_differences.csv')
+    operational=pd.read_csv(root/'operational_metrics_overall.csv')
+    assert set(summary.stratifier)=={'density','target_size','nearest_neighbor','occlusion'}
+    assert len(pair)==24 and (pair.y11m_minus_asd_f1>0).all()
+    assert len(operational)==10
+    assert (operational.false_positives_per_image>=0).all()
+    assert operational.false_negatives_per_100_scored_vehicles.between(0,100).all()
+    assert operational.confirmed_vehicles_per_100_scored_alerts.between(0,100).all()

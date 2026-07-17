@@ -82,6 +82,60 @@ AI-TOD$^a$ & A & 3 & $-.5105$--$-.4565$ & $+.1450$--$+.1920$ & $0$ & $.4565$--$.
 
 Removed-object neutralization is positive in all 24 configuration--rule replays. Source-ignore handling is positive in all ten VisDrone replays and exactly zero for UAVDT and AI-TOD, which have no active source-ignore regions. Target filtering remains configuration dependent, especially under normalized support. The exact 96-row endpoint record and 72-row transition ledger preserve artifact groups and input hashes.
 
+\section{Scene-Stratified Paths and Task Consequences}
+The strata use annotation-only tertiles fixed before metric aggregation. Density includes all 548 images. Target-size and occlusion strata include 519 nonempty images; nearest-neighbor strata include 510 images with at least two vehicles. The density cutpoints are 17 and 37 vehicles/image, target-size cutpoints are 35 and 55 pixels, nearest-neighbor cutpoints are .0326 and .0565, and occlusion-fraction cutpoints are .400 and .593.
+
+\begin{table*}[!t]
+\centering
+\caption{Endpoint scene strata for VisDrone. Path quantities are medians across five configurations; Pair is terminal-$S$ fixed-confidence $F_1$(Y11m)$-F_1$(ASD). Middle-tertile records are released. A = 24 px; N = .015.}\label{tab:scene-strata}
+\tiny
+\setlength{\tabcolsep}{2.6pt}\renewcommand{\arraystretch}{.94}
+\begin{tabular}{lllrrrr}
+\toprule
+Rule & Factor & Stratum & $\delta_{\rm target}$ & $\delta_{\rm removed}$ & Contract range & Pair\\
+\midrule
+A & Density & Sparse & $-.0507$ & $+.0532$ & $.0721$ & $+.0236$\\
+  &         & Dense & $-.0818$ & $+.1107$ & $.1252$ & $+.0250$\\
+  & Target size & Small & $-.1558$ & $+.1771$ & $.2121$ & $+.0242$\\
+  &             & Large & $-.0047$ & $+.0056$ & $.0131$ & $+.0152$\\
+  & Neighbor spacing & Crowded & $-.1188$ & $+.1459$ & $.1682$ & $+.0297$\\
+  &                  & Dispersed & $-.0164$ & $+.0186$ & $.0346$ & $+.0125$\\
+  & Occlusion & Low & $-.0670$ & $+.0820$ & $.0955$ & $+.0155$\\
+  &           & High & $-.0687$ & $+.0912$ & $.1042$ & $+.0287$\\
+\midrule
+N & Density & Sparse & $-.0021$ & $+.0089$ & $.0273$ & $+.0220$\\
+  &         & Dense & $-.0026$ & $+.0269$ & $.0406$ & $+.0154$\\
+  & Target size & Small & $-.0086$ & $+.0438$ & $.0617$ & $+.0102$\\
+  &             & Large & $-.0006$ & $+.0006$ & $.0074$ & $+.0151$\\
+  & Neighbor spacing & Crowded & $-.0067$ & $+.0378$ & $.0540$ & $+.0144$\\
+  &                  & Dispersed & $-.0002$ & $+.0015$ & $.0166$ & $+.0127$\\
+  & Occlusion & Low & $-.0054$ & $+.0185$ & $.0325$ & $+.0143$\\
+  &           & High & $-.0006$ & $+.0185$ & $.0334$ & $+.0177$\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Small-target, crowded, and dense scenes concentrate the absolute support response. Normalization attenuates each contrast while preserving the same ordering for target size, neighbor spacing, and density. Occlusion does not show a monotonic path gradient. The Y11m--ASD point difference remains positive in every one of the 24 complete factor--tertile--rule cells.
+
+\begin{table}[!t]
+\centering
+\caption{Terminal-$S$ task consequences at confidence and valid-match IoU .25. Yield is confirmed vehicles per 100 scored alerts.}\label{tab:task-consequence}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}\renewcommand{\arraystretch}{.98}
+\begin{tabular}{llrrr}
+\toprule
+Rule & Candidate & FP/image & FN/100 vehicles & Yield\\
+\midrule
+A & Y11m & 3.01 & 8.76 & 87.38\\
+  & ASD  & 3.93 & 9.80 & 83.96\\
+N & Y11m & 3.03 & 12.36 & 88.99\\
+  & ASD  & 4.32 & 11.57 & 85.10\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The operational record separates false-alarm burden from missed-target burden. Y11m improves both components under 24-pixel support. Under normalized support it produces fewer false alarms and higher review yield, while ASD produces fewer misses per 100 scored vehicles.
+
 \section{Coverage Qualification and Full Support Grid}
 Raw prediction names establish coverage before class filtering. VisDrone and UAVDT cover all declared images. AI-TOD covers 1,869/2,804 images. Its full-annotation support diagnosis uses all 2,804 images, while the ancillary metric replay is confined to the covered subset. The 1,869 covered images contain 16,900 boxes; the 935 noncovered images contain 43,004.
 

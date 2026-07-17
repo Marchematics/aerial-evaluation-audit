@@ -55,3 +55,22 @@ claims:
       - outputs/cross_configuration_contract_paths/artifact_provenance.csv
     allowed_wording: "cross-configuration consistency of the removed-object transition in the frozen full-coverage cohorts"
     forbidden_wording: ["universal detector property", "all aerial datasets", "full-benchmark AI-TOD generalization"]
+
+  - claim_id: C07
+    claim: "Small-target, crowded, and dense VisDrone strata show larger contract responses than their opposite endpoint strata."
+    status: observed
+    evidence:
+      - configs/scene_consequence_freeze_20260717.yaml
+      - outputs/visdrone_scene_consequences/stratified_path_summary.csv
+      - outputs/visdrone_scene_consequences/stratified_pair_differences.csv
+    allowed_wording: "annotation-stratified association within the frozen VisDrone configurations"
+    forbidden_wording: ["causal effect of flight altitude", "universal remote-sensing law", "post-selected subgroup significance"]
+
+  - claim_id: C08
+    claim: "Fixed-confidence task metrics expose distinct false-alarm, miss, and review-yield consequences for Y11m and ASD."
+    status: observed
+    evidence:
+      - outputs/visdrone_scene_consequences/operational_metrics_overall.csv
+      - outputs/visdrone_scene_consequences/operational_metrics_by_stratum.csv
+    allowed_wording: "operational consequence under the declared terminal contract and fixed confidence"
+    forbidden_wording: ["deployment utility", "human-review time saved", "traffic density estimate"]

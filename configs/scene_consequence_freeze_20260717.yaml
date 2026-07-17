@@ -1,0 +1,43 @@
+version: 1
+status: frozen_before_scene_stratified_analysis
+frozen_at_utc: "2026-07-17T09:48:52Z"
+scope: >-
+  Annotation-only VisDrone scene strata and operational consequence metrics
+  for the already frozen five-configuration path cohort. No model selection,
+  threshold search, or training is introduced.
+
+source: VisDrone2019-DET validation
+configurations: [B-640, B-1280, Y11m, ASD, Y11n-P2]
+support_rules:
+  - {coordinate: absolute_max_side, threshold: 24.0}
+  - {coordinate: normalized_max_side, threshold: 0.015}
+contracts: [A, F, R, S]
+confidence: 0.25
+valid_match_iou: 0.25
+
+scene_strata:
+  binning: annotation_only_tertiles
+  labels: [low, middle, high]
+  features:
+    density: valid vehicle boxes per image
+    target_size: median valid-vehicle max side in pixels; nonempty images
+    nearest_neighbor: >-
+      median nearest-neighbor distance between vehicle centers after dividing
+      x and y coordinates by image width and height; images with at least two vehicles
+    occlusion: >-
+      fraction of valid vehicle annotations with VisDrone occlusion level 1 or 2;
+      nonempty images
+
+reported_path_quantities:
+  - delta_target
+  - delta_removed
+  - contract_range
+reported_pair_quantity: terminal-S fixed-confidence micro-F1 difference, Y11m minus ASD
+operational_metrics:
+  - false_positives_per_image
+  - false_negatives_per_100_scored_vehicles
+  - confirmed_vehicles_per_100_scored_alerts
+
+input_hashes:
+  path_image_counts: 2e08f6a26050ccffdb4909237519686dbf9ff40aed012d2f81afc143baee177f
+  pair_factorial_image_counts: 8e6cb8113c53c9a0072431aeb380ae514a6f9269963db95696559ca463435325
