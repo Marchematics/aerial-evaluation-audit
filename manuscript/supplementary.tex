@@ -13,12 +13,12 @@
 \renewcommand{\thetable}{S\arabic{table}}
 \setcounter{page}{1}
 
-\section{Registered Contracts and Count Ledger}
+\section{Declared Contracts and Count Ledger}
 The four contracts alter one evaluator factor at a time. All detections are score ordered; retained valid GT is matched before an otherwise unmatched detection can be neutralized. Removed and source-ignore regions use intersection over prediction area at .5. Table~\ref{tab:contracts} distinguishes the scored target from neutral regions explicitly.
 
 \begin{table}[!t]
 \centering
-\caption{Registered evaluation contracts. $G$ is all valid GT, $G_t$ the support-retained target, $D_t=G\setminus G_t$, and $H$ source ignore.}\label{tab:contracts}
+\caption{Declared evaluation contracts. $G$ is all valid GT, $G_t$ the support-retained target, $D_t=G\setminus G_t$, and $H$ source ignore.}\label{tab:contracts}
 \scriptsize
 \setlength{\tabcolsep}{1.8pt}\renewcommand{\arraystretch}{1.05}
 \begin{tabular}{clll}
@@ -33,43 +33,57 @@ $S$ & $G_t$ & $D_t\cup H$ & add source ignores\\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:ledger} is the support-conditioned count-transition ledger behind Fig.~2 of the main paper. Every row is an exact adjacent-contract difference for one fixed prediction artifact. Summing the three $\Delta F_1$ values gives $F_{1,S}-F_{1,A}$ to machine precision. Because $F_1$ is nonlinear, the values are path-specific transitions rather than additive causal effects that are invariant to reordering.
+Table~\ref{tab:ledger} summarizes the five support-conditioned count-transition ledgers behind Fig.~2 of the main paper. Every row comes from one frozen prediction artifact. The released 90-row ledger contains the corresponding integer TP/FP/FN changes. Each three-step sum equals $F_{1,S}-F_{1,A}$ to machine precision.
 
 \begin{table}[!t]
 \centering
-\caption{Exact TP/FP/FN transition ledger at confidence and IoU .25. A = absolute 24 px; N = normalized .015. AI-TOD is conditioned on its 1,869 covered images.}\label{tab:ledger}
+\caption{Five-configuration VisDrone path summary at confidence and valid-match IoU .25. A = absolute 24 px; N = normalized .015.}\label{tab:ledger}
 \tiny
-\setlength{\tabcolsep}{1.0pt}\renewcommand{\arraystretch}{.96}
-\begin{tabular}{llcrrrrr}
+\setlength{\tabcolsep}{2.0pt}\renewcommand{\arraystretch}{.98}
+\begin{tabular}{llrrrr}
 \toprule
-Source & Rule & Step & $\Delta$TP & $\Delta$FP & $\Delta$FN & $\Delta$neutral & $\Delta F_1$\\
+Configuration & Rule & $\delta_{\rm target}$ & $\delta_{\rm removed}$ & $\delta_{\rm source}$ & Range\\
 \midrule
-VisDrone & A & $A\to F$ & $-2256$ & $+2256$ & $-2288$ & 0 & $-.0360$\\
-         &   & $F\to R$ & 0 & $-2320$ & 0 & $+2320$ & $+.0667$\\
-         &   & $R\to S$ & 0 & $-293$  & 0 & $+293$  & $+.0093$\\
-VisDrone & N & $A\to F$ & $-399$ & $+399$ & $-1344$ & 0 & $+.0178$\\
-         &   & $F\to R$ & 0 & $-356$ & 0 & $+356$ & $+.0093$\\
-         &   & $R\to S$ & 0 & $-294$ & 0 & $+294$ & $+.0078$\\
-\midrule
-UAVDT & A & $A\to F$ & $-301$ & $+301$ & $-237$ & 0 & $-.0085$\\
-      &   & $F\to R$ & 0 & $-547$ & 0 & $+547$ & $+.0038$\\
-      &   & $R\to S$ & 0 & 0 & 0 & 0 & $.0000$\\
-UAVDT & N & $A\to F$ & $-105$ & $+105$ & $-182$ & 0 & $-.0023$\\
-      &   & $F\to R$ & 0 & $-193$ & 0 & $+193$ & $+.0014$\\
-      &   & $R\to S$ & 0 & 0 & 0 & 0 & $.0000$\\
-\midrule
-AI-TOD & A & $A\to F$ & $-11977$ & $+11977$ & $-2890$ & 0 & $-.3303$\\
-       &   & $F\to R$ & 0 & $-30232$ & 0 & $+30232$ & $+.0800$\\
-       &   & $R\to S$ & 0 & 0 & 0 & 0 & $.0000$\\
-AI-TOD & N & $A\to F$ & $-5707$ & $+5707$ & $-1840$ & 0 & $-.1359$\\
-       &   & $F\to R$ & 0 & $-12587$ & 0 & $+12587$ & $+.0660$\\
-       &   & $R\to S$ & 0 & 0 & 0 & 0 & $.0000$\\
+B-640 & A & $-.0360$ & $+.0667$ & $+.0093$ & $.0760$\\
+      & N & $+.0178$ & $+.0093$ & $+.0078$ & $.0349$\\
+B-1280 & A & $-.0930$ & $+.0911$ & $+.0281$ & $.1192$\\
+       & N & $-.0192$ & $+.0252$ & $+.0237$ & $.0489$\\
+Y11m & A & $-.0310$ & $+.0727$ & $+.0119$ & $.0846$\\
+     & N & $+.0254$ & $+.0088$ & $+.0100$ & $.0441$\\
+ASD & A & $-.0759$ & $+.0932$ & $+.0166$ & $.1099$\\
+    & N & $-.0025$ & $+.0203$ & $+.0138$ & $.0341$\\
+Y11n-P2 & A & $-.0699$ & $+.0922$ & $+.0159$ & $.1080$\\
+        & N & $-.0032$ & $+.0216$ & $+.0131$ & $.0348$\\
 \bottomrule
 \end{tabular}
 \end{table}
 
+Table~\ref{tab:cross-config} extends the path beyond one baseline per source. VisDrone contributes five separately materialized artifacts. UAVDT contributes three resolution slices and a tiling configuration. AI-TOD contributes three resolution slices on the same covered subset; these rows test cache-resolution sensitivity without creating a full-benchmark estimand.
+
+\begin{table*}[!t]
+\centering
+\caption{Cross-configuration contract-path ranges at confidence and valid-match IoU .25. Each interval spans the configurations within one source. A = 24 px; N = .015. AI-TOD is conditioned on 1,869/2,804 images.}\label{tab:cross-config}
+\tiny
+\setlength{\tabcolsep}{3.0pt}\renewcommand{\arraystretch}{.96}
+\begin{tabular}{llrrrrr}
+\toprule
+Source & Rule & Configs. & $\delta_{\rm target}$ & $\delta_{\rm removed}$ & $\delta_{\rm source}$ & Contract range\\
+\midrule
+VisDrone & A & 5 & $-.0930$--$-.0310$ & $+.0667$--$+.0932$ & $+.0093$--$+.0281$ & $.0760$--$.1192$\\
+         & N & 5 & $-.0192$--$+.0254$ & $+.0088$--$+.0252$ & $+.0078$--$+.0237$ & $.0341$--$.0489$\\
+UAVDT    & A & 4 & $-.0147$--$+.0001$ & $+.0029$--$+.0067$ & $0$ & $.0030$--$.0147$\\
+         & N & 4 & $-.0041$--$+.0025$ & $+.0010$--$+.0027$ & $0$ & $.0018$--$.0041$\\
+AI-TOD$^a$ & A & 3 & $-.5105$--$-.4565$ & $+.1450$--$+.1920$ & $0$ & $.4565$--$.5105$\\
+           & N & 3 & $-.1620$--$-.0943$ & $+.0859$--$+.1028$ & $0$ & $.0943$--$.1620$\\
+\bottomrule
+\multicolumn{7}{l}{\scriptsize $^a$Coverage-conditioned resolution control; all three slices share one checkpoint and covered image set.}
+\end{tabular}
+\end{table*}
+
+Removed-object neutralization is positive in all 24 configuration--rule replays. Source-ignore handling is positive in all ten VisDrone replays and exactly zero for UAVDT and AI-TOD, which have no active source-ignore regions. Target filtering remains configuration dependent, especially under normalized support. The exact 96-row endpoint record and 72-row transition ledger preserve artifact groups and input hashes.
+
 \section{Coverage Qualification and Full Support Grid}
-Raw prediction names establish coverage before class filtering. VisDrone and UAVDT cover all declared images. AI-TOD covers 1,869/2,804 images and is therefore eligible for full-annotation support diagnosis, a covered-subset metric replay, but not full-benchmark metric or rank inference. Its 1,869 covered images contain 16,900 boxes; the 935 noncovered images contain 43,004.
+Raw prediction names establish coverage before class filtering. VisDrone and UAVDT cover all declared images. AI-TOD covers 1,869/2,804 images. Its full-annotation support diagnosis uses all 2,804 images, while the ancillary metric replay is confined to the covered subset. The 1,869 covered images contain 16,900 boxes; the 935 noncovered images contain 43,004.
 
 \begin{table}[!t]
 \centering
@@ -121,35 +135,52 @@ Normalized & .0050 & 100.0 & 100.0 & 99.9\\
 \end{table}
 
 \section{Paired Rank Records and Evaluator Controls}
-Table~\ref{tab:rank} gives the localization-by-metric control for the Y11m--ASD pair. Sequence clusters are the leading seven-digit VisDrone filename tokens (76 clusters). Every replicate includes all images in each sampled sequence, applies identical multiplicities to both configurations, and recomputes global counts or pooled-detection AP. AP is never averaged across images or sequences.
+Table~\ref{tab:rank} gives the localization-by-metric control for the Y11m--ASD pair. Sequence clusters are the leading seven-digit VisDrone filename tokens (76 clusters). Every replicate includes all images in each sampled sequence, applies identical multiplicities to both configurations, and recomputes global counts or pooled-detection AP. The max-$t$ critical value is 2.744 across the eight primary comparisons.
 
 \begin{table}[!t]
 \centering
-\caption{Y11m--ASD sequence-paired differences under terminal contract $S$ (10,000 replicates). A = 24 px; N = .015. IoU is the valid-GT match threshold; neutralization remains at intersection-over-prediction .5.}\label{tab:rank}
+\caption{Y11m--ASD differences under terminal contract $S$ (10,000 paired sequence-cluster replicates). A = 24 px; N = .015.}\label{tab:rank}
 \tiny
-\setlength{\tabcolsep}{1.15pt}\renewcommand{\arraystretch}{.91}
+\setlength{\tabcolsep}{1.05pt}\renewcommand{\arraystretch}{.94}
 \begin{tabular}{llrrrr}
 \toprule
-Rule & IoU/metric & Y11m & ASD & Diff. & Seq. 95\%\\
+Rule & IoU/metric & Diff. & Pointwise 95\% & Simultaneous 95\% & $p_{\rm adj}$\\
 \midrule
-A & .25/$F_1(c=.25)$ & .8927 & .8697 & $+.0229$ & [.0185,.0275]\\
-  & .25/max-$F_1$ & .8979 & .8816 & $+.0163$ & [.0119,.0213]\\
-  & .25/AP & .9453 & .9372 & $+.0081$ & [.0051,.0120]\\
-  & .50/$F_1(c=.25)$ & .8799 & .8577 & $+.0222$ & [.0180,.0269]\\
-  & .50/max-$F_1$ & .8886 & .8745 & $+.0141$ & [.0099,.0191]\\
-  & .50/AP & .9231 & .9217 & $+.0013$ & [$-.0033$,.0052]\\
+A & .25/max-$F_1$ & $+.0163$ & [.0119,.0213] & [.0097,.0230] & $<.001$\\
+  & .25/AP & $+.0081$ & [.0051,.0120] & [.0033,.0129] & $<.001$\\
+  & .50/max-$F_1$ & $+.0141$ & [.0099,.0191] & [.0076,.0207] & $<.001$\\
+  & .50/AP & $+.0013$ & [$-.0033$,.0052] & [$-.0046$,.0072] & $.984$\\
 \midrule
-N & .25/$F_1(c=.25)$ & .8831 & .8673 & $+.0158$ & [.0118,.0201]\\
-  & .25/max-$F_1$ & .8831 & .8732 & $+.0099$ & [.0060,.0140]\\
-  & .25/AP & .9310 & .9315 & $-.0005$ & [$-.0030$,.0047]\\
-  & .50/$F_1(c=.25)$ & .8664 & .8524 & $+.0141$ & [.0104,.0181]\\
-  & .50/max-$F_1$ & .8692 & .8639 & $+.0054$ & [.0013,.0103]\\
-  & .50/AP & .8986 & .9096 & $-.0110$ & [$-.0181$,$-.0057$]\\
+N & .25/max-$F_1$ & $+.0099$ & [.0060,.0140] & [.0043,.0155] & $<.001$\\
+  & .25/AP & $-.0005$ & [$-.0030$,.0047] & [$-.0061$,.0051] & $1.000$\\
+  & .50/max-$F_1$ & $+.0054$ & [.0013,.0103] & [$-.0010$,.0117] & $.125$\\
+  & .50/AP & $-.0110$ & [$-.0181$,$-.0057$] & [$-.0199$,$-.0022$] & $.008$\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Fixed- and optimized-confidence $F_1$ favor Y11m at both localization thresholds. At IoU .25, AP favors Y11m for A and is unresolved for N; at IoU .50, AP is unresolved for A and favors ASD for N. A sequence-resolved ASD-favoring normalized conclusion therefore occurs only in the cell combining stricter localization with score integration. Image-paired controls preserve these endpoint directions and remain in the released records.
+Fixed-confidence $F_1$ has positive pointwise intervals in all four cells and remains an operational secondary endpoint. The simultaneous family resolves three max-$F_1$ cells and two AP cells. Normalized max-$F_1$ at IoU .50 joins the two previously unresolved AP cells after multiplicity adjustment.
+
+\begin{table*}[!t]
+\centering
+\caption{Retention-matched support-definition controls. Range is the span of five candidate-level $A\!\rightarrow\!F\!\rightarrow\!R\!\rightarrow\!S$ ranges. Remaining columns are Y11m--ASD terminal-$S$ point differences.}\label{tab:alternative-support}
+\tiny
+\setlength{\tabcolsep}{2.4pt}\renewcommand{\arraystretch}{.96}
+\begin{tabular}{llrrrrrr}
+\toprule
+Coordinate & Support definition (threshold) & Retained & Path range & max-$F_{1,25}$ & AP25 & max-$F_{1,50}$ & AP50\\
+\midrule
+Absolute & max side (24 px) & 73.33\% & .076--.119 & $+.0163$ & $+.0081$ & $+.0141$ & $+.0013$\\
+ & minimum side (17 px) & 73.95\% & .067--.115 & $+.0174$ & $+.0072$ & $+.0152$ & $+.0019$\\
+ & geometric mean (20.149 px) & 73.30\% & .073--.119 & $+.0178$ & $+.0083$ & $+.0161$ & $+.0025$\\
+Normalized & max side (.015) & 89.77\% & .034--.049 & $+.0099$ & $-.0005$ & $+.0054$ & $-.0110$\\
+ & minimum side (.009559) & 90.32\% & .032--.047 & $+.0088$ & $-.0025$ & $+.0045$ & $-.0157$\\
+ & geometric mean (.012187) & 89.77\% & .034--.049 & $+.0103$ & $-.0009$ & $+.0058$ & $-.0113$\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+The alternative definitions preserve every max-$F_1$ and AP direction in the $2\!\times\!2$ design. Both neutralization steps remain positive in all 30 candidate--rule combinations.
 
 The AP cap is 2,000 detections per image. The observed maximum is 1,881, so no pool image is truncated; caps of 100 and 300 alter dense-image inputs. The independent AP implementation and COCOeval agree exactly for AP50 (maximum absolute difference $<10^{-12}$). AP25 keeps the $S$-contract neutralization threshold fixed at .5, whereas COCOeval couples crowd matching to the evaluated IoU; COCOeval equivalence is therefore not asserted for that deliberately controlled cell. A threshold-first Hungarian replay selects the same top configuration as greedy matching in 24/24 settings; the maximum absolute $F_1$ difference is .00546.
 

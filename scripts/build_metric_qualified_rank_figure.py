@@ -13,7 +13,7 @@ plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42})
 
 ROOT = Path(__file__).resolve().parents[1]
 POINTS = ROOT / "outputs" / "metric_qualified_rank" / "metric_rank_points.csv"
-FACTORIAL = ROOT / "outputs" / "metric_factorial_control" / "factorial_pairwise_bootstrap.csv"
+FACTORIAL = ROOT / "outputs" / "metric_factorial_control" / "factorial_pairwise_simultaneous.csv"
 OUT = ROOT / "figures" / "fig_metric_cluster_qualified_rank.pdf"
 ORDER = ["B-640", "B-1280", "Y11m", "ASD", "Y11n-P2"]
 COLORS = {"B-640": "#0072B2", "B-1280": "#56B4E9", "Y11m": "#009E73", "ASD": "#D55E00", "Y11n-P2": "#CC79A7"}
@@ -70,16 +70,17 @@ def main() -> None:
         row = factorial[
             factorial["mode"].eq(mode) & np.isclose(factorial.iou, iou) & factorial.metric.eq(metric)
         ].iloc[0]
-        color = "#009E73" if row.ci95_low > 0 else ("#D55E00" if row.ci95_high < 0 else ".40")
+        color = "#009E73" if row.simultaneous_ci95_low > 0 else ("#D55E00" if row.simultaneous_ci95_high < 0 else ".40")
         ax_ci.errorbar(row.point_difference, yi,
-                       xerr=[[row.point_difference - row.ci95_low], [row.ci95_high - row.point_difference]],
+                       xerr=[[row.point_difference - row.simultaneous_ci95_low],
+                             [row.simultaneous_ci95_high - row.point_difference]],
                        fmt="o", ms=3.2, color=color, ecolor=color, elinewidth=1.0, capsize=2.0)
     ax_ci.axvline(0, color=".18", lw=.75, ls="--")
     ax_ci.axhline(3.5, color=".55", lw=.55, ls=":")
     ax_ci.set_yticks(y, [value[3] for value in order])
     ax_ci.set_xlabel("Y11m $-$ ASD")
     ax_ci.set_xlim(-.021, .023)
-    ax_ci.set_title(r"(b) Localization $\times$ metric control", fontsize=7.7, loc="left", pad=3)
+    ax_ci.set_title(r"(b) Simultaneous localization $\times$ metric control", fontsize=7.7, loc="left", pad=3)
     ax_ci.grid(axis="x", color=".89", lw=.45)
     for ax in (ax_rank, ax_ci):
         ax.tick_params(labelsize=5.9, length=2.0, pad=1.5)

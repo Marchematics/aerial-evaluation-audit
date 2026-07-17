@@ -44,3 +44,14 @@ claims:
       - outputs/coverage_qualification/coverage_qualification.json
     allowed_wording: "coverage-conditioned AI-TOD endpoint"
     forbidden_wording: ["full AI-TOD benchmark result", "AI-TOD rank stability"]
+
+  - claim_id: C06
+    claim: "Removed-object neutralization increases F1 across all 18 full-coverage VisDrone and UAVDT configuration-by-rule replays."
+    status: observed
+    evidence:
+      - configs/cross_configuration_path_freeze_20260717.yaml
+      - outputs/cross_configuration_contract_paths/transition_ledger.csv
+      - outputs/cross_configuration_contract_paths/cross_configuration_summary.csv
+      - outputs/cross_configuration_contract_paths/artifact_provenance.csv
+    allowed_wording: "cross-configuration consistency of the removed-object transition in the frozen full-coverage cohorts"
+    forbidden_wording: ["universal detector property", "all aerial datasets", "full-benchmark AI-TOD generalization"]

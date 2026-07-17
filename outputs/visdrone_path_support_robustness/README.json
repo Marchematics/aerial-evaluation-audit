@@ -1,0 +1,107 @@
+{
+  "freeze_record": "configs/extension_analysis_freeze_20260717.yaml",
+  "candidates": [
+    "visdrone_control_baseline640",
+    "visdrone_control_baseline1280",
+    "visdrone_control_yolo11m_hf640",
+    "visdrone_control_asd1280",
+    "visdrone_control_yolo11n_p2_1280"
+  ],
+  "common_images": 548,
+  "contracts": [
+    "A",
+    "F",
+    "R",
+    "S"
+  ],
+  "operating_confidence": 0.25,
+  "path_iou": 0.25,
+  "factorial_ious": [
+    0.25,
+    0.5
+  ],
+  "confidence_grid": [
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.5
+  ],
+  "support_definitions": [
+    "max_side",
+    "minimum_side",
+    "geometric_mean_side"
+  ],
+  "alternative_threshold_calibration": "valid-GT retained-count matching to the corresponding max-side headline",
+  "thresholds": [
+    {
+      "rule_id": "absolute_max_side",
+      "coordinate": "absolute",
+      "definition": "max_side",
+      "threshold": 24.0,
+      "target_retained_gt": 12496,
+      "actual_retained_gt": 12496,
+      "total_valid_gt": 17040,
+      "retained_fraction": 0.7333333333333333,
+      "absolute_count_difference": 0
+    },
+    {
+      "rule_id": "absolute_minimum_side",
+      "coordinate": "absolute",
+      "definition": "minimum_side",
+      "threshold": 17.0,
+      "target_retained_gt": 12496,
+      "actual_retained_gt": 12601,
+      "total_valid_gt": 17040,
+      "retained_fraction": 0.7394953051643193,
+      "absolute_count_difference": 105
+    },
+    {
+      "rule_id": "absolute_geometric_mean_side",
+      "coordinate": "absolute",
+      "definition": "geometric_mean_side",
+      "threshold": 20.149441679609886,
+      "target_retained_gt": 12496,
+      "actual_retained_gt": 12491,
+      "total_valid_gt": 17040,
+      "retained_fraction": 0.7330399061032864,
+      "absolute_count_difference": 5
+    },
+    {
+      "rule_id": "normalized_max_side",
+      "coordinate": "normalized",
+      "definition": "max_side",
+      "threshold": 0.015,
+      "target_retained_gt": 15297,
+      "actual_retained_gt": 15297,
+      "total_valid_gt": 17040,
+      "retained_fraction": 0.8977112676056338,
+      "absolute_count_difference": 0
+    },
+    {
+      "rule_id": "normalized_minimum_side",
+      "coordinate": "normalized",
+      "definition": "minimum_side",
+      "threshold": 0.009558823529411765,
+      "target_retained_gt": 15297,
+      "actual_retained_gt": 15391,
+      "total_valid_gt": 17040,
+      "retained_fraction": 0.9032276995305164,
+      "absolute_count_difference": 94
+    },
+    {
+      "rule_id": "normalized_geometric_mean_side",
+      "coordinate": "normalized",
+      "definition": "geometric_mean_side",
+      "threshold": 0.012187450538044615,
+      "target_retained_gt": 15297,
+      "actual_retained_gt": 15296,
+      "total_valid_gt": 17040,
+      "retained_fraction": 0.8976525821596244,
+      "absolute_count_difference": 1
+    }
+  ]
+}

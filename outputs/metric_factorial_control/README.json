@@ -38,6 +38,16 @@
     "max-F1",
     "AP"
   ],
+  "simultaneous_family": {
+    "id": "two_supports_x_two_ious_x_two_metrics",
+    "metrics": [
+      "max-F1",
+      "AP"
+    ],
+    "comparisons": 8,
+    "method": "single-step 95% max-t intervals over paired sequence-cluster bootstrap draws",
+    "critical_value": 2.7439550882331
+  },
   "ap_max_dets": 2000,
   "replicates": 10000,
   "seed": 20260715,

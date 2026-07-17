@@ -1,0 +1,30 @@
+{
+  "freeze_record": "configs/cross_configuration_path_freeze_20260717.yaml",
+  "configurations": 12,
+  "source_configuration_counts": {
+    "AI-TOD": 3,
+    "UAVDT": 4,
+    "VisDrone": 5
+  },
+  "rules": [
+    {
+      "mode": "absolute",
+      "threshold": 24.0
+    },
+    {
+      "mode": "normalized",
+      "threshold": 0.015
+    }
+  ],
+  "contracts": [
+    "A",
+    "F",
+    "R",
+    "S"
+  ],
+  "confidence": 0.25,
+  "iou": 0.25,
+  "path_identity_max_abs_error": 5.551115123125783e-17,
+  "ai_tod_scope": "coverage-conditioned on 1,869/2,804 images",
+  "independence_note": "Resolution slices share a raw cache and checkpoint; artifact_group identifies shared provenance."
+}

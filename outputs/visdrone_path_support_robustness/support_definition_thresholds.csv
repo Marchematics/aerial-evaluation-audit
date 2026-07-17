@@ -1,0 +1,7 @@
+rule_id,coordinate,definition,threshold,target_retained_gt,actual_retained_gt,total_valid_gt,retained_fraction,absolute_count_difference
+absolute_max_side,absolute,max_side,24.0,12496,12496,17040,0.7333333333333333,0
+absolute_minimum_side,absolute,minimum_side,17.0,12496,12601,17040,0.7394953051643193,105
+absolute_geometric_mean_side,absolute,geometric_mean_side,20.149441679609886,12496,12491,17040,0.7330399061032864,5
+normalized_max_side,normalized,max_side,0.015,15297,15297,17040,0.8977112676056338,0
+normalized_minimum_side,normalized,minimum_side,0.009558823529411765,15297,15391,17040,0.9032276995305164,94
+normalized_geometric_mean_side,normalized,geometric_mean_side,0.012187450538044615,15297,15296,17040,0.8976525821596244,1

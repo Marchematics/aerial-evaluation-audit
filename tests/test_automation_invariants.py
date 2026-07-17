@@ -84,3 +84,18 @@ def test_metric_factorial_control_is_complete_and_closes_existing_endpoints():
             assert np.isclose(row.max_f1,old.max_f1)
         else:
             assert np.isclose(row.ap,old.ap50)
+
+def test_cross_configuration_contract_path_closes_and_repeats():
+    root=ROOT/'outputs/cross_configuration_contract_paths'
+    endpoints=pd.read_csv(root/'contract_endpoints.csv')
+    ledger=pd.read_csv(root/'transition_ledger.csv')
+    provenance=pd.read_csv(root/'artifact_provenance.csv')
+    assert len(endpoints)==96
+    assert len(ledger)==72
+    assert provenance.groupby('source').candidate.nunique().to_dict()=={
+        'AI-TOD':3, 'UAVDT':4, 'VisDrone':5,
+    }
+    removed=ledger[ledger.transition=='F->R']
+    assert len(removed)==24
+    assert (removed.delta_f1>0).all()
+    assert len(removed[~removed.coverage_conditioned])==18

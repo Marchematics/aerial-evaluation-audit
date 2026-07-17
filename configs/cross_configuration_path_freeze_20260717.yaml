@@ -1,0 +1,53 @@
+version: 1
+status: frozen_before_cross_configuration_replay
+frozen_at_utc: "2026-07-17T09:34:40Z"
+scope: >-
+  Cross-configuration external-validity control for the A-to-F-to-R-to-S
+  contract path. The analysis uses existing raw prediction caches only and
+  introduces no model selection or training.
+
+evaluation:
+  contracts: [A, F, R, S]
+  confidence: 0.25
+  valid_match_iou: 0.25
+  support_rules:
+    - {coordinate: absolute, threshold: 24.0}
+    - {coordinate: normalized, threshold: 0.015}
+  matching: score_ordered_valid_gt_first
+  ignore_overlap: intersection_over_prediction_area_ge_0.5
+
+cohorts:
+  visdrone:
+    coverage: 548/548
+    configurations:
+      - visdrone_control_baseline640
+      - visdrone_control_baseline1280
+      - visdrone_control_yolo11m_hf640
+      - visdrone_control_asd1280
+      - visdrone_control_yolo11n_p2_1280
+  uavdt:
+    coverage: 305/305
+    configurations:
+      - uavdt_baseline640
+      - uavdt_baseline960
+      - uavdt_baseline1280
+      - uavdt_tiling960
+  aitod:
+    coverage: 1869/2804
+    coverage_conditioned: true
+    configurations:
+      - aitod_baseline640
+      - aitod_baseline960
+      - aitod_baseline1280
+
+input_hashes:
+  visdrone_configuration: 52644d654a83770b355bce018296f1f8e390f2e553b33e90fa409df24386801b
+  prediction_manifest_v2: f5e9e2959c0773111bb296f3897617d1c192b0d0c800b7ee97535cd3da6a2952
+  uavdt_multiresolution_cache: 02c84a606efb8c01da66ce16bc24a20c841d2e414513708ab710a9b53516ace9
+  uavdt_tiling_cache: 762900eb08ecb0371918d5f8a2a76c9a01c33485f59f137e4e4600bfe6880ede
+  aitod_multiresolution_cache: ce85e2fbeda1c9833fef2d37f2b515fee9ea3c7f3ca6dd1bce104bc74f0453f8
+
+interpretation: >-
+  VisDrone and UAVDT provide full-coverage cross-configuration evidence.
+  AI-TOD remains a covered-subset control because the raw prediction cache
+  covers 1,869 of 2,804 validation images.

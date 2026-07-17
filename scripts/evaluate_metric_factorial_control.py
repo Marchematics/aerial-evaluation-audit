@@ -263,6 +263,44 @@ def pairwise_row(
     }
 
 
+def simultaneous_max_t(
+    rows: list[dict],
+    bootstrap_differences: list[np.ndarray],
+    family_id: str,
+) -> pd.DataFrame:
+    """Construct single-step max-t intervals for one prespecified family."""
+
+    if len(rows) != 8 or len(bootstrap_differences) != 8:
+        raise ValueError("the factorial family must contain exactly eight comparisons")
+    draws = np.column_stack(bootstrap_differences)
+    points = np.asarray([row["point_difference"] for row in rows], dtype=float)
+    standard_errors = draws.std(axis=0, ddof=1)
+    if np.any(standard_errors <= 0):
+        raise RuntimeError("zero bootstrap standard error in simultaneous family")
+    standardized = np.abs((draws - points[None, :]) / standard_errors[None, :])
+    replicate_max = standardized.max(axis=1)
+    critical = float(np.quantile(replicate_max, .95))
+    result = pd.DataFrame(rows).copy()
+    result["family_id"] = family_id
+    result["family_size"] = len(rows)
+    result["simultaneous_method"] = "single_step_cluster_bootstrap_max_t"
+    result["bootstrap_standard_error"] = standard_errors
+    result["max_t_critical_95"] = critical
+    result["simultaneous_ci95_low"] = points - critical * standard_errors
+    result["simultaneous_ci95_high"] = points + critical * standard_errors
+    observed = np.abs(points / standard_errors)
+    result["max_t_adjusted_p_two_sided"] = [
+        float((1 + np.sum(replicate_max >= value)) / (len(replicate_max) + 1))
+        for value in observed
+    ]
+    result["simultaneous_direction"] = np.where(
+        result.simultaneous_ci95_low > 0,
+        "Y11m>ASD",
+        np.where(result.simultaneous_ci95_high < 0, "Y11m<ASD", "unresolved"),
+    )
+    return result
+
+
 def cocoeval_ap(
     pred: pd.DataFrame,
     names: list[str],
@@ -368,6 +406,8 @@ def main() -> None:
     rng.multinomial(len(names), np.full(len(names), 1 / len(names)), size=args.replicates)
     sampled = rng.multinomial(unit_count, np.full(unit_count, 1 / unit_count), size=args.replicates)
     pairwise_rows: list[dict] = []
+    simultaneous_rows: list[dict] = []
+    simultaneous_draws: list[np.ndarray] = []
     fixed_index = int(np.where(np.isclose(CONFIDENCES, OPERATING_CONFIDENCE))[0][0])
     for mode, threshold in RULES:
         for iou in IOUS:
@@ -400,22 +440,30 @@ def main() -> None:
                 point_block.loc[Y11M, "f1_at_025"], point_block.loc[ASD, "f1_at_025"],
                 a_f1[:, fixed_index] - b_f1[:, fixed_index], args.replicates,
             ))
-            pairwise_rows.append(pairwise_row(
+            max_f1_differences = a_f1.max(axis=1) - b_f1.max(axis=1)
+            max_f1_row = pairwise_row(
                 "max-F1", mode, threshold, iou,
                 point_block.loc[Y11M, "max_f1"], point_block.loc[ASD, "max_f1"],
-                a_f1.max(axis=1) - b_f1.max(axis=1), args.replicates,
-            ))
+                max_f1_differences, args.replicates,
+            )
+            pairwise_rows.append(max_f1_row)
+            simultaneous_rows.append(max_f1_row)
+            simultaneous_draws.append(max_f1_differences)
             a_ap = pooled_ap_bootstrap(
                 ap_records[Y11M][(mode, float(threshold), iou)], sampled, image_sequence, args.ap_batch,
             )
             b_ap = pooled_ap_bootstrap(
                 ap_records[ASD][(mode, float(threshold), iou)], sampled, image_sequence, args.ap_batch,
             )
-            pairwise_rows.append(pairwise_row(
+            ap_differences = a_ap - b_ap
+            ap_row = pairwise_row(
                 "AP", mode, threshold, iou,
                 point_block.loc[Y11M, "ap"], point_block.loc[ASD, "ap"],
-                a_ap - b_ap, args.replicates,
-            ))
+                ap_differences, args.replicates,
+            )
+            pairwise_rows.append(ap_row)
+            simultaneous_rows.append(ap_row)
+            simultaneous_draws.append(ap_differences)
             print(json.dumps({"mode": mode, "threshold": threshold, "iou": iou,
                               "completed_metrics": ["F1@conf=.25", "max-F1", "AP"]}), flush=True)
 
@@ -444,10 +492,16 @@ def main() -> None:
         raise AssertionError("custom AP and COCOeval differ beyond the prespecified tolerance")
 
     pairwise = pd.DataFrame(pairwise_rows)
+    simultaneous = simultaneous_max_t(
+        simultaneous_rows,
+        simultaneous_draws,
+        "two_supports_x_two_ious_x_two_metrics",
+    )
     OUT.mkdir(parents=True, exist_ok=True)
     image_counts.to_parquet(OUT / "factorial_image_counts.parquet", index=False)
     points.to_csv(OUT / "factorial_points.csv", index=False)
     pairwise.to_csv(OUT / "factorial_pairwise_bootstrap.csv", index=False)
+    simultaneous.to_csv(OUT / "factorial_pairwise_simultaneous.csv", index=False)
     crosscheck.to_csv(OUT / "factorial_ap_crosscheck.csv", index=False)
     summary = {
         "purpose": "separate localization threshold from score integration",
@@ -461,6 +515,13 @@ def main() -> None:
         "confidence_grid": CONFIDENCES.tolist(),
         "operating_confidence": OPERATING_CONFIDENCE,
         "metrics": ["F1@conf=.25", "max-F1", "AP"],
+        "simultaneous_family": {
+            "id": "two_supports_x_two_ious_x_two_metrics",
+            "metrics": ["max-F1", "AP"],
+            "comparisons": 8,
+            "method": "single-step 95% max-t intervals over paired sequence-cluster bootstrap draws",
+            "critical_value": float(simultaneous.max_t_critical_95.iloc[0]),
+        },
         "ap_max_dets": MAX_DETS,
         "replicates": args.replicates,
         "seed": args.seed,
@@ -472,6 +533,7 @@ def main() -> None:
     (OUT / "README.json").write_text(json.dumps(summary, indent=2) + "\n")
     print("\nFactorial points\n", points.to_string(index=False))
     print("\nSequence-paired differences\n", pairwise.to_string(index=False))
+    print("\nSimultaneous sequence-paired family\n", simultaneous.to_string(index=False))
     print("\nAP evaluator crosscheck\n", crosscheck.to_string(index=False))
     print(json.dumps(summary, indent=2))
 
